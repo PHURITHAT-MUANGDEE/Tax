@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex">
+<title>ยกเลิกรับอีเมล</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500&display=swap">
+<style>
+:root { --bg:#edf0f5; --paper:#fff; --ink:#0f1b33; --muted:#55627a; --line:#d3dae6; --accent:#1f3fbf; --accent-ink:#fff; --good:#0f7b4f; --bad:#b3261e; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0c1220; --paper:#141c2e; --ink:#e6ebf5; --muted:#93a0ba; --line:#26314a; --accent:#7b97ff; --accent-ink:#0c1220; --good:#4cc38a; --bad:#ff8a80; color-scheme: dark; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans Thai", system-ui, sans-serif; line-height: 1.7; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding-block: 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.card { width: 100%; max-width: 440px; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+h1 { font-family: "Prompt", sans-serif; font-weight: 600; font-size: 1.4rem; margin: 0; line-height: 1.3; }
+p { margin: 0; color: var(--muted); }
+button { font: inherit; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 11px 18px; cursor: pointer; font-weight: 500; align-self: flex-start; }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); }
+#msg { min-height: 1.4em; }
+#msg.ok { color: var(--good); }
+#msg.err { color: var(--bad); }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>ยกเลิกรับอีเมลแจ้งเตือน</h1>
+  <p id="lead">กดปุ่มด้านล่างเพื่อหยุดรับอีเมลแจ้งเตือนจากสมุดภาษี คุณเปิดรับอีกครั้งได้ในหน้าโปรไฟล์</p>
+  <button type="button" id="btn">ยืนยันยกเลิกรับอีเมล</button>
+  <p id="msg" role="status"></p>
+  <p><a href="./">กลับไปที่สมุดภาษี</a></p>
+</main>
+<script>
+(function () {
+  var token = new URLSearchParams(location.search).get("t") || "";
+  var btn = document.getElementById("btn"), msg = document.getElementById("msg");
+  function say(t, cls) { msg.textContent = t; msg.className = cls || ""; }
+  if (!/^[0-9a-f-]{36}$/i.test(token)) { btn.disabled = true; say("ลิงก์นี้ไม่ถูกต้องหรือไม่ครบ ใช้ลิงก์จากอีเมลล่าสุดอีกครั้ง", "err"); return; }
+  btn.addEventListener("click", function () {
+    btn.disabled = true; say("กำลังดำเนินการ…");
+    fetch("/api/unsubscribe", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: token })
+    }).then(function (r) {
+      if (r.ok) { say("ยกเลิกเรียบร้อย คุณจะไม่ได้รับอีเมลแจ้งเตือนอีก", "ok"); return; }
+      btn.disabled = false;
+      say(r.status === 404 ? "ไม่พบรายการนี้ อาจยกเลิกไปแล้วหรือบัญชีถูกลบ" : "ดำเนินการไม่สำเร็จ ลองใหม่อีกครั้ง", "err");
+    }).catch(function () { btn.disabled = false; say("เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่", "err"); });
+  });
+})();
+</script>
+</body>
+</html>
