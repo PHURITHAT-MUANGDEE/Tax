@@ -1,0 +1,59 @@
+# ตั้งค่าทั้งหมดผ่านตัวแปรสภาพแวดล้อม (ดู README) ห้ามใส่ความลับจริงลงไฟล์นี้
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework      # อยู่หลัง reverse proxy / HTTPS
+  servlet:
+    session:
+      timeout: 14d
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${COOKIE_SECURE:true}        # รันทดสอบบน http://localhost ให้ตั้ง COOKIE_SECURE=false
+
+spring:
+  datasource:
+    # Cloud SQL: jdbc:postgresql:///taxbook?cloudSqlInstance=PROJECT:REGION:INSTANCE&socketFactory=com.google.cloud.sql.postgres.SocketFactory
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/taxbook}
+    username: ${DB_USER:taxbook}
+    password: ${DB_PASSWORD:}
+  flyway:
+    enabled: true
+  jpa:
+    open-in-view: false                    # ไม่เปิดธุรกรรมค้างตลอดคำขอ เข้าถึงข้อมูลผ่าน service เท่านั้น
+    hibernate:
+      ddl-auto: none                       # โครงสร้างตารางมาจาก Flyway เท่านั้น
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  session:
+    store-type: jdbc                       # เก็บเซสชันใน DB เพราะ Cloud Run อาจมีหลายอินสแตนซ์
+    jdbc:
+      initialize-schema: never             # ตารางสร้างใน Flyway V2
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: openid,profile,email
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 20000
+      mail.smtp.writetimeout: 20000
+
+app:
+  base-url: ${APP_URL:http://localhost:8080}     # ลิงก์ในอีเมลชี้มาที่นี่ (ไม่มี / ท้าย)
+  mail-from: ${MAIL_FROM:}                       # ที่อยู่ผู้ส่ง เช่น you@gmail.com ถ้าว่างจะไม่ส่งอีเมลจริง
+  mail-from-name: ${MAIL_FROM_NAME:สมุดภาษี}
+  admin-token: ${ADMIN_TOKEN:}                   # ว่าง = ปิดปลายทางทดสอบ /admin/reminders/run
+  reminders:
+    enabled: ${REMINDERS_ENABLED:true}
+    max-per-run: ${REMINDERS_MAX_PER_RUN:150}
+    pause-ms: ${REMINDERS_PAUSE_MS:300}
