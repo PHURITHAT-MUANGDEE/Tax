@@ -18,14 +18,22 @@ class DataValidatorTest {
 
     @Test
     void createEntryAcceptsValidAndDefaultsTheRest() {
-        var e = DataValidator.entry(m("yearBe", 2569, "month", 10, "category", "c1", "amount", 50000), true);
+        var e = DataValidator.entry(m("yearBe", 2569, "month", 10, "category", "c1", "amount", 50000, "name", " เงินเดือน "), true);
         assertEquals(2569, e.yearBe());
         assertEquals(10, e.month());
         assertEquals("c1", e.category());
         assertEquals(new BigDecimal("50000.00"), e.amount());
         assertEquals(new BigDecimal("0.00"), e.withheld());
         assertEquals("", e.method());
-        assertEquals("", e.name());
+        assertEquals("เงินเดือน", e.name());   // ตัดช่องว่างหัวท้าย
+    }
+
+    @Test
+    void entryNameIsRequired() {
+        assertThrows(Invalid.class, () -> DataValidator.entry(m("yearBe", 2569, "month", 1, "category", "c1", "amount", 100), true));
+        assertThrows(Invalid.class, () -> DataValidator.entry(m("yearBe", 2569, "month", 1, "category", "c1", "name", "   "), true));
+        assertThrows(Invalid.class, () -> DataValidator.entry(m("name", ""), false));
+        assertEquals("ฟรีแลนซ์", DataValidator.entry(m("name", "ฟรีแลนซ์"), false).name());
     }
 
     @Test
@@ -60,7 +68,7 @@ class DataValidatorTest {
     @Test
     void methodsAllowedForEntries() {
         for (String ok : new String[]{"auto", "manual", "none", "3", "15", ""})
-            assertEquals(ok, DataValidator.entry(m("yearBe", 2569, "month", 1, "category", "c1", "method", ok), true).method());
+            assertEquals(ok, DataValidator.entry(m("yearBe", 2569, "month", 1, "category", "c1", "method", ok, "name", "x"), true).method());
         assertThrows(Invalid.class, () -> DataValidator.method(""));      // withhold_pref ห้ามว่าง
         assertEquals("10", DataValidator.method("10"));
     }
