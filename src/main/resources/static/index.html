@@ -209,6 +209,8 @@ tfoot td { font-weight: 600; background: var(--bg); }
 .cblock:last-child { border-bottom: 0; padding-bottom: 0; }
 .chead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
 .btn.add { color: var(--accent); border-color: var(--accent); }
+.sform { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: start; }
+#sform .acts { display: flex; gap: 8px; flex-wrap: wrap; }
 .ents { display: flex; flex-direction: column; gap: 10px; }
 .ent { position: relative; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 1.3fr); gap: 12px; align-items: start; background: var(--bg); border-radius: 6px; padding: 12px 52px 12px 12px; }
 .ent input, .ent select { background: var(--paper); }
@@ -346,6 +348,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       <div class="navlist">
         <a class="navitem" href="#summary" data-nav="summary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="long">รายได้ที่หักภาษีแล้ว</span><span class="short">สรุป</span></a>
         <a class="navitem" href="#monthly" data-nav="monthly"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span class="long">บันทึกรายได้รายเดือน</span><span class="short">รายเดือน</span></a>
+        <a class="navitem" href="#search" data-nav="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><span class="long">ค้นหารายการรายได้</span><span class="short">ค้นหา</span></a>
         <a class="navitem" href="#profile" data-nav="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="long">โปรไฟล์ผู้ใช้</span><span class="short">โปรไฟล์</span></a>
         <a class="navitem" href="#notify" data-nav="notify"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></svg><span class="long">ตั้งค่าแจ้งเตือน</span><span class="short">แจ้งเตือน</span></a>
         <a class="navitem" href="#rules" data-nav="rules"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg><span class="long">ภาษีแต่ละประเภทหักอย่างไร</span><span class="short">วิธีหัก</span></a>
@@ -439,6 +442,28 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
           <div class="seg2" role="group" aria-label="เลือกข้อมูลที่แสดง"><button type="button" id="mxInc" aria-pressed="true">รายได้</button><button type="button" id="mxWh" aria-pressed="false">ภาษีที่ถูกหัก</button></div>
         </div>
         <div class="tablewrap"><table class="mtable" id="matrix"></table></div>
+      </div>
+    </section>
+
+    <!-- ค้นหารายการ -->
+    <section class="page" id="page-search" data-page="search" hidden>
+      <div class="phead">
+        <div class="eyebrow">ค้นหา</div>
+        <h1>ค้นหารายการรายได้</h1>
+        <p>พิมพ์ชื่อรายการ หรือเลือกปี เดือน และประเภทเงินได้ เพื่อหารายการที่บันทึกไว้ กดชื่อเดือนในผลลัพธ์เพื่อไปแก้ไขรายการนั้น</p>
+      </div>
+      <form class="sheet" id="sform" autocomplete="off">
+        <div class="sform">
+          <div class="field"><label for="srQ">ชื่อรายการ</label><input type="text" id="srQ" maxlength="100" placeholder="เช่น ดอกเบี้ย ฟรีแลนซ์"></div>
+          <div class="field"><label for="srYear">ปีภาษี</label><select id="srYear"></select></div>
+          <div class="field"><label for="srMonth">เดือน</label><select id="srMonth"></select></div>
+          <div class="field"><label for="srCat">ประเภทเงินได้</label><select id="srCat"></select></div>
+        </div>
+        <div class="acts"><button type="submit" class="btn primary">ค้นหา</button><button type="button" class="btn" id="srClear">ล้างตัวกรอง</button></div>
+      </form>
+      <div class="sheet">
+        <p class="hint" id="srMsg" role="status">ยังไม่ได้ค้นหา กด "ค้นหา" เพื่อดูรายการ (ไม่ใส่เงื่อนไขจะแสดงทุกรายการ)</p>
+        <div id="srBody"></div>
       </div>
     </section>
 
@@ -1621,8 +1646,60 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     resetTimer = setTimeout(function () { b.removeAttribute("data-arm"); b.textContent = "ล้างรายได้และโปรไฟล์ทั้งหมด"; }, 4000);
   });
 
+  /* ---------- ค้นหารายการ → GET /api/entries?year&month&category&q ---------- */
+  var srReady = false;
+  function prepSearch() {
+    var ys = Object.keys(state.years).map(Number).sort(function (a, b) { return b - a; });
+    var cur = $("srYear").value, h = "<option value=''>ทุกปี</option>";
+    ys.forEach(function (y) { h += "<option value='" + y + "'>" + y + "</option>"; });
+    $("srYear").innerHTML = h; $("srYear").value = cur;
+    if (!srReady) {
+      var m = "<option value=''>ทุกเดือน</option>";
+      MONTHS.forEach(function (n, i) { m += "<option value='" + (i + 1) + "'>" + n + "</option>"; });
+      $("srMonth").innerHTML = m;
+      var c = "<option value=''>ทุกประเภท</option>";
+      CATS.forEach(function (x) { c += "<option value='" + x.k + "'>" + x.code + " " + esc(x.name) + "</option>"; });
+      $("srCat").innerHTML = c;
+      srReady = true;
+    }
+  }
+  function renderSearch(list) {
+    if (!list.length) { $("srMsg").textContent = "ไม่พบรายการที่ตรงกับเงื่อนไข"; $("srBody").innerHTML = ""; return; }
+    var ti = 0, tw = 0, h = "<div class='tablewrap'><table><thead><tr><th>ปี</th><th>เดือน</th><th>ประเภท</th><th>รายการ</th><th class='r'>รายได้</th><th class='r'>ภาษีที่ถูกหัก</th></tr></thead><tbody>";
+    list.forEach(function (e) {
+      var c = CATS.filter(function (x) { return x.k === e.category; })[0];
+      ti += +e.amount || 0; tw += +e.withheld || 0;
+      h += "<tr><td><span class='num'>" + e.yearBe + "</span></td><td><a class='golink' href='#monthly' data-gom='" + e.yearBe + ":" + e.month + "'>" + MONTHS[e.month - 1] + "</a></td><td><span class='badge'>" + (c ? c.code : esc(e.category)) + "</span></td><td>" + (e.name ? esc(e.name) : "<span class='hint'>ไม่ระบุชื่อ</span>") + "</td><td class='r'><span class='num'>" + N(+e.amount || 0) + "</span></td><td class='r'><span class='num'>" + N(+e.withheld || 0) + "</span></td></tr>";
+    });
+    h += "</tbody><tfoot><tr><td colspan='4'>รวม</td><td class='r'><span class='num'>" + N(ti) + "</span></td><td class='r'><span class='num'>" + N(tw) + "</span></td></tr></tfoot></table></div>";
+    $("srMsg").textContent = "พบ " + list.length + " รายการ";
+    $("srBody").innerHTML = h;
+  }
+  async function runSearch() {
+    var qs = [], q = $("srQ").value.trim();
+    if ($("srYear").value) qs.push("year=" + encodeURIComponent($("srYear").value));
+    if ($("srMonth").value) qs.push("month=" + encodeURIComponent($("srMonth").value));
+    if ($("srCat").value) qs.push("category=" + encodeURIComponent($("srCat").value));
+    if (q) qs.push("q=" + encodeURIComponent(q));
+    $("srMsg").textContent = "กำลังค้นหา…"; $("srBody").innerHTML = "";
+    if (unsaved) await flush();
+    var r = await api("GET", "/api/entries" + (qs.length ? "?" + qs.join("&") : ""));
+    if (!r.ok) { $("srMsg").textContent = r.status === 400 ? "เงื่อนไขการค้นหาไม่ถูกต้อง" : "ค้นหาไม่สำเร็จ ลองใหม่อีกครั้ง"; return; }
+    renderSearch(Array.isArray(r.data) ? r.data : []);
+  }
+  $("sform").addEventListener("submit", function (e) { e.preventDefault(); runSearch(); });
+  $("srClear").addEventListener("click", function () {
+    $("srQ").value = ""; $("srYear").value = ""; $("srMonth").value = ""; $("srCat").value = "";
+    $("srMsg").textContent = "ยังไม่ได้ค้นหา กด \"ค้นหา\" เพื่อดูรายการ (ไม่ใส่เงื่อนไขจะแสดงทุกรายการ)"; $("srBody").innerHTML = "";
+  });
+  $("srBody").addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[data-gom]"); if (!a) return;
+    var p = a.getAttribute("data-gom").split(":"); // ไปหน้ารายเดือนของปี/เดือนนั้น (ปล่อยให้ลิงก์เปลี่ยน hash เอง)
+    setYear(+p[0]); selMonth = +p[1]; renderChips(); renderMonth(); updateDerived();
+  });
+
   /* ---------- routing ---------- */
-  var PAGES = ["summary", "monthly", "profile", "notify", "rules", "guide"];
+  var PAGES = ["summary", "monthly", "search", "profile", "notify", "rules", "guide"];
   function show() {
     var h = (location.hash || "").replace("#", "");
     if (PAGES.indexOf(h) < 0) h = "summary";
@@ -1630,6 +1707,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     Array.prototype.forEach.call(document.querySelectorAll(".navitem"), function (a) {
       if (a.getAttribute("data-nav") === h) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
+    if (h === "search" && loaded) prepSearch();
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", show);
