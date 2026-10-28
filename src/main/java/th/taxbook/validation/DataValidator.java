@@ -88,7 +88,7 @@ public final class DataValidator {
 
     // ---------- รายการรายได้ ----------
 
-    /** create = true: ต้องมี yearBe, month, category (amount/withheld/method/name ไม่ส่ง = ค่าว่าง) */
+    /** create = true: ต้องมี yearBe, month, category และ name (ชื่อรายการ ห้ามว่าง) ส่วน amount/withheld/method ไม่ส่ง = ค่าว่าง */
     public static EntryInput entry(Map<String, Object> body, boolean create) {
         if (body == null) throw new Invalid("invalid_body");
         for (String k : body.keySet()) if (!ENTRY_KEYS.contains(k)) throw new Invalid("unknown_field_" + k);
@@ -105,11 +105,12 @@ public final class DataValidator {
             if (!(body.get("method") instanceof String m) || !(m.isEmpty() || METHOD.matcher(m).matches())) throw new Invalid("invalid_method");
             method = m;
         } else if (create) method = "";
-        String name = null;
+        String name = null;   // ชื่อรายการบังคับ: สร้างใหม่ต้องมี และถ้าส่งมาแก้ก็ห้ามว่าง
         if (body.get("name") != null) {
             if (!(body.get("name") instanceof String n) || n.length() > MAX_NAME) throw new Invalid("invalid_name");
-            name = n;
-        } else if (create) name = "";
+            if (n.isBlank()) throw new Invalid("name_required");
+            name = n.strip();
+        } else if (create) throw new Invalid("name_required");
         return new EntryInput(year, month, cat, amount, withheld, method, name);
     }
 

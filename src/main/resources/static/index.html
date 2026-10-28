@@ -70,6 +70,13 @@ button { font: inherit; }
 .yearpick label { font-size: 0.76rem; color: var(--side-mute); }
 .yearpick select { width: 100%; padding: 7px 8px; border-radius: 4px; border: 1px solid var(--side-line, rgba(255,255,255,.25)); background: rgba(255,255,255,.08); color: inherit; font: inherit; }
 .yearpick select option { color: #0f1b33; }
+.yearbtns, .yearnew { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.yearnew input { flex: 1 1 100%; min-width: 0; width: auto; padding: 6px 8px; font-size: 0.85rem; background: rgba(255,255,255,.08); color: inherit; border-color: var(--side-line, rgba(255,255,255,.25)); }
+.ybtn { border: 1px solid var(--side-line, rgba(255,255,255,.25)); background: transparent; color: inherit; border-radius: 4px; padding: 5px 10px; font-size: 0.8rem; font-family: inherit; cursor: pointer; }
+.ybtn:hover { border-color: var(--side-mute); }
+.ybtn[data-arm="1"] { background: var(--bad); border-color: var(--bad); color: #fff; }
+.ybtn:disabled { opacity: 0.45; cursor: not-allowed; }
+.yearmsg { font-size: 0.76rem; color: var(--side-mute); line-height: 1.4; min-height: 1em; }
 .field.inl2 { min-width: 190px; }
 .page-extra { display: flex; flex-direction: column; gap: 22px; }
 .page-extra[hidden] { display: none; }
@@ -93,6 +100,16 @@ a.golink { color: var(--accent); text-decoration: underline; cursor: pointer; }
 .savestat { display: inline-flex; align-items: center; gap: 8px; }
 .savestat::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
 .savestat[data-s="saving"]::before { background: #d9a400; }
+.savestat[data-s="needname"]::before { background: var(--bad); }
+.rowstat { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--muted); }
+.rowstat::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
+.rowstat[data-s="none"] { display: none; }
+.rowstat[data-s="saving"]::before { background: #d9a400; }
+.rowstat[data-s="error"]::before, .rowstat[data-s="needname"]::before { background: var(--bad); }
+.rowstat[data-s="error"], .rowstat[data-s="needname"] { color: var(--bad); }
+.field .need { display: none; color: var(--bad); }
+.field input[aria-invalid="true"] { border-color: var(--bad); }
+.field input[aria-invalid="true"] ~ .need { display: block; }
 .topline { display: none; }
 
 .main { min-width: 0; padding-block: 36px 72px; padding-left: 40px; padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -344,7 +361,10 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   <nav class="side" aria-label="เมนูหลัก">
     <div class="side-in">
       <div class="brand"><b>สมุดภาษี</b><span>บุคคลธรรมดา</span></div>
-      <div class="yearpick"><label for="yearSel">ปีภาษีที่กำลังดู</label><select id="yearSel"></select></div>
+      <div class="yearpick"><label for="yearSel">ปีภาษีที่กำลังดู</label><select id="yearSel"></select>
+        <div class="yearbtns"><button type="button" class="ybtn" id="yearAdd">+ เพิ่มปี</button><button type="button" class="ybtn" id="yearDel">ลบปีนี้</button></div>
+        <form class="yearnew" id="yearForm" hidden><input type="text" inputmode="numeric" id="yearNew" maxlength="4" placeholder="เช่น 2570" aria-label="ปีภาษีที่จะเพิ่ม (พ.ศ.)"><button type="submit" class="ybtn">เพิ่ม</button><button type="button" class="ybtn" id="yearCancel">ยกเลิก</button></form>
+        <span class="yearmsg" id="yearMsg" role="status"></span></div>
       <div class="navlist">
         <a class="navitem" href="#summary" data-nav="summary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="long">รายได้ที่หักภาษีแล้ว</span><span class="short">สรุป</span></a>
         <a class="navitem" href="#monthly" data-nav="monthly"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span class="long">บันทึกรายได้รายเดือน</span><span class="short">รายเดือน</span></a>
@@ -891,6 +911,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     });
     return c;
   }
+  function hasName(e) { return !!(e.n && String(e.n).trim()); }
   function keepEnt(e) { return (e.i || 0) > 0 || (e.w || 0) > 0 || !!(e.n && String(e.n).trim()); }
   function pruneOne(months, m) {
     var mo = months[m]; if (!mo) return;
@@ -922,11 +943,14 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     showGate("เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง การแก้ไขที่ยังไม่ได้บันทึกอาจหายไป");
   }
 
+  var statusKind = "idle";
   function setStatus(kind) {
-    var text = kind === "saving" ? "กำลังบันทึก…" : kind === "saved" ? "บันทึกแล้ว · บนเซิร์ฟเวอร์" : kind === "error" ? "บันทึกไม่สำเร็จ กำลังลองใหม่" : "บันทึกอัตโนมัติ";
+    statusKind = kind;
+    var text = kind === "saving" ? "กำลังบันทึก…" : kind === "saved" ? "บันทึกแล้ว · บนเซิร์ฟเวอร์" : kind === "error" ? "บันทึกไม่สำเร็จ กำลังลองใหม่" : kind === "needname" ? "ยังไม่ได้บันทึก: กรอกชื่อรายการให้ครบทุกบรรทัดที่มีรายได้" : "บันทึกอัตโนมัติ";
     Array.prototype.forEach.call(document.querySelectorAll(".savestat"), function (el) { el.textContent = text; el.setAttribute("data-s", kind); });
     var note = "ข้อมูลเก็บในบัญชีของคุณบนเซิร์ฟเวอร์ เปิดดูได้จากทุกเครื่องที่เข้าสู่ระบบด้วยบัญชีเดียวกัน ผู้ใช้คนอื่นอ่านข้อมูลของคุณไม่ได้";
     $("storeNote").textContent = note; $("storeNote2").textContent = note;
+    refreshRowStats();
   }
   function retryLater() { setStatus("error"); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 5000); }
   function scheduleSave() { unsaved = true; setStatus("saving"); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
@@ -939,14 +963,14 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     Object.keys(p).forEach(function (k) { b[k] = (typeof p[k] === "boolean" || typeof p[k] === "string") ? p[k] : num(p[k]); });
     return b;
   }
-  function entBody(y, m, c, e) { return { yearBe: parseInt(y, 10), month: parseInt(m, 10), category: c, amount: num(e.i), withheld: num(e.w), method: String(e.t || ""), name: String(e.n || "") }; }
+  function entBody(y, m, c, e) { return { yearBe: parseInt(y, 10), month: parseInt(m, 10), category: c, amount: num(e.i), withheld: num(e.w), method: String(e.t || ""), name: String(e.n || "").trim() }; }
   function snapshotServer() {
     srv.profile = JSON.stringify(profBody()); srv.wm = JSON.parse(JSON.stringify(state.wm || {})); srv.ent = {};
     Object.keys(state.years).forEach(function (y) { var mo = state.years[y].months || {};
       Object.keys(mo).forEach(function (m) { Object.keys(mo[m]).forEach(function (c) { mo[m][c].forEach(function (e) { if (e.id) srv.ent[e.id] = JSON.stringify(entBody(y, m, c, e)); }); }); }); });
   }
   async function syncOnce() {
-    var r, body, want = {};
+    var r, body, want = {}, blocked = 0;
     body = profBody();
     if (JSON.stringify(body) !== srv.profile) { r = await api("PUT", "/api/profile", body); if (!r.ok) return r; srv.profile = JSON.stringify(body); }
     var wm = state.wm || {}, k;
@@ -960,6 +984,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
         for (var li = 0; li < list.length; li++) {
           var e = list[li];
           if (!keepEnt(e)) continue;
+          if (!hasName(e)) { blocked++; if (e.id) want[e.id] = 1; continue; }   // ยังไม่มีชื่อรายการ: ไม่ส่ง และไม่ลบของเดิม
           body = entBody(y, m, c, e);
           if (!e.id) {
             r = await api("POST", "/api/entries", body); if (!r.ok) return r;
@@ -972,7 +997,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       }
     }
     for (var id in srv.ent) if (!want[id]) { r = await api("DELETE", "/api/entries/" + id); if (!r.ok && r.status !== 404) return r; delete srv.ent[id]; }
-    return { ok: true };
+    return { ok: true, blocked: blocked };
   }
   function flush() {
     if (!authUser || !loaded) return Promise.resolve();
@@ -982,6 +1007,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       saving = false;
       if (!r.ok) { if (r.status !== 401) retryLater(); return; }
       if (again) { again = false; setStatus("saving"); return flush(); }
+      if (r.blocked) { unsaved = true; setStatus("needname"); return; }
       unsaved = false; setStatus("saved");
     });
   }
@@ -1418,13 +1444,37 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   function entHtml(k, j, e) {
     var id = k + "-" + j;
     return "<div class='ent'>" +
-      "<div class='field'><label for='lb-" + id + "'>ชื่อรายการ (ไม่บังคับ)</label><input type='text' id='lb-" + id + "' data-f='n' data-cat='" + k + "' data-ei='" + j + "' value='" + esc(e.n || "") + "' placeholder='" + PH[k] + "' maxlength='80'></div>" +
+      "<div class='field'><label for='lb-" + id + "'>ชื่อรายการ (จำเป็น)</label><input type='text' id='lb-" + id + "' data-f='n' data-cat='" + k + "' data-ei='" + j + "' value='" + esc(e.n || "") + "' placeholder='" + PH[k] + "' maxlength='80' aria-required='true'><span class='hint need'>ต้องกรอกชื่อรายการ จึงจะบันทึกได้</span></div>" +
       "<div class='field'><label for='in-" + id + "'>รายได้ (บาท)</label><input type='text' inputmode='decimal' id='in-" + id + "' data-f='i' data-cat='" + k + "' data-ei='" + j + "' value='" + (e.i || "") + "' placeholder='0'></div>" +
       "<div class='field wfield' id='wcol-" + id + "'>" + wHtml(k, j, e) + "</div>" +
+      "<div class='rowstat' id='rs-" + id + "' data-cat='" + k + "' data-ei='" + j + "' data-s='none' role='status'></div>" +
       "<button type='button' class='x' id='rm-" + id + "' data-rm='1' data-cat='" + k + "' data-ei='" + j + "' aria-label='ลบรายการนี้'>×</button></div>";
+  }
+  var ROWTXT = { saved: "บันทึกแล้ว", saving: "กำลังบันทึก…", error: "บันทึกไม่สำเร็จ กำลังลองใหม่", needname: "ยังไม่ได้บันทึก (ต้องกรอกชื่อรายการ)" };
+  function rowState(c, en) {
+    if (!en || !keepEnt(en)) return "none";
+    if (!hasName(en)) return "needname";
+    if (en.id && srv.ent[en.id] === JSON.stringify(entBody(state.year, selMonth, c, en))) return "saved";
+    return statusKind === "error" ? "error" : "saving";
+  }
+  function refreshRowStats() {   // ป้ายสถานะของรายได้แต่ละบรรทัด
+    if (!loaded || !state) return;
+    var mo = state.months[selMonth] || {};
+    Array.prototype.forEach.call(document.querySelectorAll("#mrows .rowstat"), function (el) {
+      var c = el.getAttribute("data-cat"), st = rowState(c, (mo[c] || [])[+el.getAttribute("data-ei")]);
+      el.setAttribute("data-s", st); el.textContent = ROWTXT[st] || "";
+    });
+  }
+  function markNames() {   // เน้นช่องชื่อรายการที่ยังว่างทั้งที่มีรายได้
+    var mo = state.months[selMonth] || {};
+    Array.prototype.forEach.call(document.querySelectorAll("#mrows input[data-f='n']"), function (el) {
+      var en = (mo[el.getAttribute("data-cat")] || [])[+el.getAttribute("data-ei")];
+      if (en && keepEnt(en) && !hasName(en)) el.setAttribute("aria-invalid", "true"); else el.removeAttribute("aria-invalid");
+    });
   }
   function renderCat(k) {
     $("ents-" + k).innerHTML = displayEnts(k).map(function (e, j) { return entHtml(k, j, e); }).join("");
+    if (typeof refreshRowStats === "function") refreshRowStats();
   }
   function renderMonth() {
     $("monTitle").textContent = MONTHS[selMonth - 1] + " " + state.year;
@@ -1434,6 +1484,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
         "<div class='ents' id='ents-" + c.k + "'></div><div class='csub' id='cs-" + c.k + "'></div></section>";
     }).join("");
     CATS.forEach(function (c) { renderCat(c.k); });
+    markNames(); refreshRowStats();
     updateMonthMeta();
   }
   function updateMonthMeta() {
@@ -1492,7 +1543,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     return last || (state.year === NOW_YEAR ? new Date().getMonth() + 1 : 1);
   }
   function fillYearSel() {
-    var have = dataYears(), lo = Math.min.apply(null, [NOW_YEAR - 7, state.year].concat(have)), hi = Math.max(NOW_YEAR + 1, state.year), h = "";
+    var have = dataYears(), all = Object.keys(state.years).map(Number), lo = Math.min.apply(null, [NOW_YEAR - 7, state.year].concat(all)), hi = Math.max.apply(null, [NOW_YEAR + 1, state.year].concat(all)), h = "";
     for (var y = hi; y >= lo; y--) h += "<option value='" + y + "'>" + y + (y === NOW_YEAR ? " (ปีปัจจุบัน)" : "") + (have.indexOf(y) >= 0 ? " · มีข้อมูล" : "") + "</option>";
     $("yearSel").innerHTML = h; $("yearSel").value = String(state.year);
   }
@@ -1509,6 +1560,42 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     var m = selMonth; renderAll(); if (keepMonth) { selMonth = m; renderChips(); renderMonth(); updateDerived(); }
   }
   function renderAll() { selMonth = defaultMonth(); fillYearSel(); yearLabels(); initProfile(); renderChips(); renderMonth(); updateDerived(); }
+
+  /* ---------- เพิ่ม/ลบปีภาษี → POST /api/years, DELETE /api/years/{ปี} ---------- */
+  var yearDelTimer = null;
+  function yearMsg(t) { $("yearMsg").textContent = t || ""; }
+  function disarmYearDel() { clearTimeout(yearDelTimer); var b = $("yearDel"); b.removeAttribute("data-arm"); b.textContent = "ลบปีนี้"; }
+  $("yearAdd").addEventListener("click", function () { $("yearForm").hidden = false; yearMsg(""); $("yearNew").value = ""; $("yearNew").focus(); });
+  $("yearCancel").addEventListener("click", function () { $("yearForm").hidden = true; yearMsg(""); });
+  $("yearForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var y = parseInt($("yearNew").value, 10);
+    if (!(y >= 2500 && y <= 2700)) { yearMsg("กรอกปี พ.ศ. 4 หลัก ระหว่าง 2500 ถึง 2700"); return; }
+    if (state.years[y]) { $("yearForm").hidden = true; yearMsg("มีปี " + y + " อยู่แล้ว เปลี่ยนไปปีนั้นให้"); setYear(y); return; }
+    if (unsaved) await flush();
+    var r = await api("POST", "/api/years", { yearBe: y });
+    if (!r.ok) { yearMsg("เพิ่มปีไม่สำเร็จ ลองใหม่อีกครั้ง"); return; }
+    $("yearForm").hidden = true; setYear(y); yearMsg("เพิ่มปี " + y + " แล้ว");
+  });
+  $("yearDel").addEventListener("click", async function () {
+    var b = $("yearDel"), y = state.year;
+    if (b.getAttribute("data-arm") !== "1") {
+      b.setAttribute("data-arm", "1"); b.textContent = "กดอีกครั้งเพื่อลบปี " + y; yearMsg("จะลบปี " + y + " พร้อมรายการรายได้ทั้งหมดในปีนี้");
+      clearTimeout(yearDelTimer); yearDelTimer = setTimeout(function () { disarmYearDel(); yearMsg(""); }, 5000); return;
+    }
+    disarmYearDel();
+    if (saving) { yearMsg("กำลังบันทึกอยู่ ลองกดลบอีกครั้งในอีกสักครู่"); return; }
+    if (unsaved) await flush();
+    var r = await api("DELETE", "/api/years/" + y);
+    if (!r.ok && r.status !== 404) { yearMsg("ลบปีไม่สำเร็จ ลองใหม่อีกครั้ง"); return; }
+    delete state.years[y];
+    Object.keys(srv.ent).forEach(function (id) { try { if (JSON.parse(srv.ent[id]).yearBe === y) delete srv.ent[id]; } catch (e2) {} });
+    if (logYear === String(y)) logYear = "all";
+    var rest = Object.keys(state.years).map(Number).sort(function (a, c) { return c - a; });
+    setYear(y !== NOW_YEAR ? NOW_YEAR : (rest[0] || NOW_YEAR));
+    yearMsg("ลบปี " + y + " แล้ว");
+  });
+  $("yearSel").addEventListener("change", function () { disarmYearDel(); yearMsg(""); });
 
   /* ---------- ประวัติรายได้รายปี ---------- */
   var logYear = "all";
@@ -1587,7 +1674,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     var t = e.target, f = t.getAttribute("data-f"); if (!f) return;
     var en = entryAt(t.getAttribute("data-cat"), +t.getAttribute("data-ei"));
     if (f === "n") en.n = t.value.slice(0, 80); else if (f === "i") en.i = num(t.value); else en.w = num(t.value);
-    scheduleSave(); updateDerived();
+    scheduleSave(); updateDerived(); markNames();
   });
   $("mrows").addEventListener("change", function (e) {
     var t = e.target; if (!t.getAttribute("data-w")) return;
