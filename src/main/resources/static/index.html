@@ -101,6 +101,12 @@ a.golink { color: var(--accent); text-decoration: underline; cursor: pointer; }
 .savestat::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
 .savestat[data-s="saving"]::before { background: #d9a400; }
 .savestat[data-s="needname"]::before { background: var(--bad); }
+.allowtop { gap: 10px; }
+.allowtop h2 { margin: 10px 0 0; font-size: 1.05rem; }
+.bigfig { font-size: 2.3rem; font-weight: 600; line-height: 1.15; }
+.ent.pent { padding-right: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.ent.pent .field.wide { grid-column: 1 / -1; }
+.stack.narrow { max-width: 720px; }
 .rowstat { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--muted); }
 .rowstat::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
 .rowstat[data-s="none"] { display: none; }
@@ -369,10 +375,11 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
         <a class="navitem" href="#summary" data-nav="summary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="long">รายได้ที่หักภาษีแล้ว</span><span class="short">สรุป</span></a>
         <a class="navitem" href="#monthly" data-nav="monthly"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span class="long">บันทึกรายได้รายเดือน</span><span class="short">รายเดือน</span></a>
         <a class="navitem" href="#search" data-nav="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><span class="long">ค้นหารายการรายได้</span><span class="short">ค้นหา</span></a>
-        <a class="navitem" href="#profile" data-nav="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="long">โปรไฟล์ผู้ใช้</span><span class="short">โปรไฟล์</span></a>
+        <a class="navitem" href="#profile" data-nav="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><span class="long">ค่าลดหย่อน</span><span class="short">ลดหย่อน</span></a>
         <a class="navitem" href="#notify" data-nav="notify"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></svg><span class="long">ตั้งค่าแจ้งเตือน</span><span class="short">แจ้งเตือน</span></a>
         <a class="navitem" href="#rules" data-nav="rules"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5L5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg><span class="long">ภาษีแต่ละประเภทหักอย่างไร</span><span class="short">วิธีหัก</span></a>
         <a class="navitem" href="#guide" data-nav="guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z"/><path d="M5 16a4 4 0 0 1 4-4h10"/></svg><span class="long">คู่มือการใช้งาน</span><span class="short">คู่มือ</span></a>
+        <a class="navitem" href="#settings" data-nav="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg><span class="long">ตั้งค่า</span><span class="short">ตั้งค่า</span></a>
       </div>
       <div class="sidefoot">
         <span class="who2" id="side-user"></span>
@@ -487,19 +494,24 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       </div>
     </section>
 
-    <!-- 3. โปรไฟล์ -->
+    <!-- 3. ค่าลดหย่อน -->
     <section class="page" id="page-profile" data-page="profile" hidden>
       <div class="phead">
-        <div class="eyebrow">ข้อมูลส่วนตัว</div>
-        <h1>โปรไฟล์ผู้ใช้</h1>
-        <p>สถานะครอบครัวและค่าลดหย่อนของคุณ ใช้คำนวณภาษีทั้งปีในหน้าสรุป เปลี่ยนแล้วตัวเลขอัปเดตทันที</p>
+        <div class="eyebrow">ลดหย่อนภาษี</div>
+        <h1>ค่าลดหย่อน</h1>
+        <p>กรอกสถานะครอบครัว เบี้ยประกัน และเงินออมของคุณ ระบบนำไปคำนวณภาษีทั้งปีในหน้าสรุป เปลี่ยนแล้วตัวเลขอัปเดตทันทีและบันทึกให้อัตโนมัติ</p>
       </div>
-      <div class="two">
-        <form class="sheet" id="pform" autocomplete="off">
-          <div class="group">
-            <div class="eyebrow">ทั่วไป</div>
-            <div class="fields">
-              <div class="field"><label for="p-nick">ชื่อที่ให้เรียก</label><input type="text" id="p-nick" data-p="nick" data-t="s" placeholder="เช่น ต้น"></div>
+      <div class="sheet allowtop">
+        <div class="eyebrow">ค่าลดหย่อนของคุณ</div>
+        <div class="bigfig num" id="allowBig">฿0</div>
+        <h2>ลดหย่อนด้วยอะไรบ้าง</h2>
+        <div class="lines" id="allowLines"></div>
+        <div class="tip" id="allowTip"></div>
+      </div>
+      <form class="sheet" id="pform" autocomplete="off">
+          <section class="cblock">
+            <div class="chead"><div class="who"><span class="badge">ครอบครัว</span><div><div class="wn">ครอบครัวและผู้อยู่ในความดูแล</div><div class="hint">สถานะสมรส บุตร บิดามารดา ผู้พิการ</div></div></div></div>
+            <div class="ents"><div class="ent pent">
               <div class="field"><label for="p-marital">สถานะสมรส</label>
                 <select id="p-marital" data-p="marital" data-t="s">
                   <option value="single">โสด</option>
@@ -508,38 +520,40 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
                 </select>
                 <span class="hint">คู่สมรสไม่มีเงินได้ลดหย่อนได้ 60,000 บาท</span>
               </div>
-            </div>
-          </div>
-          <div class="group">
-            <div class="eyebrow">ครอบครัว</div>
-            <div class="fields">
+            
               <div class="field"><label for="p-kids">จำนวนบุตร</label><input type="text" inputmode="numeric" id="p-kids" data-p="kids" data-t="i"><span class="hint">คนละ 30,000 บาท อายุไม่เกิน 20 ปี หรือไม่เกิน 25 ปีถ้ากำลังเรียนระดับอุดมศึกษา</span></div>
               <div class="field"><label for="p-kids2">บุตรคนที่ 2 ขึ้นไปที่เกิดปี 2561 เป็นต้นมา</label><input type="text" inputmode="numeric" id="p-kids2" data-p="kids2" data-t="i"><span class="hint">ได้เพิ่มอีกคนละ 30,000 บาท</span></div>
               <div class="field"><label for="p-parents">บิดามารดาของตัวเอง (0 ถึง 2 คน)</label><input type="text" inputmode="numeric" id="p-parents" data-p="parents" data-t="i"><span class="hint">คนละ 30,000 บาท อายุ 60 ปีขึ้นไป รายได้ไม่เกิน 30,000 บาทต่อปี</span></div>
               <div class="field"><label for="p-spParents">บิดามารดาของคู่สมรส (0 ถึง 2 คน)</label><input type="text" inputmode="numeric" id="p-spParents" data-p="spParents" data-t="i"><span class="hint">ใช้สิทธิ์ได้เมื่อสมรสแล้ว เงื่อนไขเดียวกัน</span></div>
               <div class="field wide"><label for="p-disabled">ผู้พิการหรือทุพพลภาพที่เลี้ยงดู (คน)</label><input type="text" inputmode="numeric" id="p-disabled" data-p="disabled" data-t="i"><span class="hint">คนละ 60,000 บาท ต้องมีบัตรประจำตัวคนพิการหรือเอกสารรับรอง</span></div>
-            </div>
-          </div>
-          <div class="group">
-            <div class="eyebrow">ประกันและเงินออม (ยอดจ่ายทั้งปี)</div>
-            <div class="fields">
+            
+              <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
+            </div></div>
+          </section>
+          <section class="cblock">
+            <div class="chead"><div class="who"><span class="badge">ประกัน</span><div><div class="wn">ประกันและเงินออม (ยอดจ่ายทั้งปี)</div><div class="hint">ประกันสังคม ประกันชีวิตและสุขภาพ กองทุนเกษียณ</div></div></div></div>
+            <div class="ents"><div class="ent pent">
               <div class="field"><label for="p-ss">เงินสมทบประกันสังคม</label><input type="text" inputmode="decimal" id="p-ss" data-p="ss" data-t="n"><span class="hint">หักตามจริง สูงสุด 9,000 บาท</span></div>
               <div class="field"><label for="p-life">เบี้ยประกันชีวิต</label><input type="text" inputmode="decimal" id="p-life" data-p="life" data-t="n"><span class="hint">สูงสุด 100,000 บาท</span></div>
               <div class="field"><label for="p-health">เบี้ยประกันสุขภาพตัวเอง</label><input type="text" inputmode="decimal" id="p-health" data-p="health" data-t="n"><span class="hint">สูงสุด 25,000 บาท รวมกับประกันชีวิตไม่เกิน 100,000</span></div>
               <div class="field"><label for="p-phealth">เบี้ยประกันสุขภาพบิดามารดา</label><input type="text" inputmode="decimal" id="p-phealth" data-p="phealth" data-t="n"><span class="hint">สูงสุด 15,000 บาท</span></div>
               <div class="field wide"><label for="p-retire">กองทุนเพื่อการเกษียณ (กองทุนสำรองเลี้ยงชีพ, RMF, SSF, กอช., ประกันบำนาญ)</label><input type="text" inputmode="decimal" id="p-retire" data-p="retire" data-t="n"><span class="hint">รวมกันไม่เกิน 500,000 บาท และไม่เกิน 30% ของรายได้ แอปนี้ใช้เพดานรวมอย่างง่าย</span></div>
-            </div>
-          </div>
-          <div class="group">
-            <div class="eyebrow">อื่น ๆ</div>
-            <div class="fields">
+            
+              <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
+            </div></div>
+          </section>
+          <section class="cblock">
+            <div class="chead"><div class="who"><span class="badge">อื่น ๆ</span><div><div class="wn">ดอกเบี้ยบ้านและเงินบริจาค</div><div class="hint">ดอกเบี้ยเงินกู้ซื้อบ้าน เงินบริจาคทั่วไป</div></div></div></div>
+            <div class="ents"><div class="ent pent">
               <div class="field"><label for="p-home">ดอกเบี้ยเงินกู้ซื้อบ้านทั้งปี</label><input type="text" inputmode="decimal" id="p-home" data-p="home" data-t="n"><span class="hint">สูงสุด 100,000 บาท</span></div>
               <div class="field"><label for="p-donate">เงินบริจาคทั่วไป</label><input type="text" inputmode="decimal" id="p-donate" data-p="donate" data-t="n"><span class="hint">ไม่เกิน 10% ของเงินได้หลังหักลดหย่อน</span></div>
-            </div>
-          </div>
-          <div class="group">
-            <div class="eyebrow">วิธีหักค่าใช้จ่ายของรายได้อื่น</div>
-            <div class="fields">
+            
+              <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
+            </div></div>
+          </section>
+          <section class="cblock">
+            <div class="chead"><div class="who"><span class="badge">หักเหมา</span><div><div class="wn">วิธีหักค่าใช้จ่ายของรายได้อื่น</div><div class="hint">ทรัพย์สินให้เช่า วิชาชีพอิสระ ธุรกิจ และดอกเบี้ย/ปันผล</div></div></div></div>
+            <div class="ents"><div class="ent pent">
               <div class="field"><label for="p-rentType">ทรัพย์สินที่ให้เช่า 40(5)</label>
                 <select id="p-rentType" data-p="rentType" data-t="n">
                   <option value="30">บ้าน อาคาร สิ่งปลูกสร้าง · หักเหมา 30%</option>
@@ -557,17 +571,28 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
               </div>
               <div class="field"><label for="p-bizRate">หักเหมา 40(8) (% ตามประเภทกิจการ)</label><input type="text" inputmode="decimal" id="p-bizRate" data-p="bizRate" data-t="n"><span class="hint">ปกติ 40 ถึง 80% ตรวจประเภทกิจการของคุณที่ rd.go.th</span></div>
               <div class="field"><label class="check" for="p-excl4"><input type="checkbox" id="p-excl4" data-p="excl4" data-t="b"><span>ไม่นำดอกเบี้ยและเงินปันผล 40(4) มารวมคำนวณ ภาษีที่ถูกหักถือเป็นภาษีสุดท้าย</span></label></div>
-            </div>
-          </div>
+            
+              <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
+            </div></div>
+          </section>
+      </form>
+    </section>
+
+    <!-- ตั้งค่า -->
+    <section class="page" id="page-settings" data-page="settings" hidden>
+      <div class="phead">
+        <div class="eyebrow">บัญชีของคุณ</div>
+        <h1>ตั้งค่า</h1>
+        <p>ชื่อที่ให้ระบบเรียกคุณ และการจัดการบัญชีกับข้อมูลของคุณ</p>
+      </div>
+      <div class="stack narrow">
+        <form class="sheet" id="setform" autocomplete="off">
+          <h2>ชื่อที่ให้เรียก</h2>
+          <div class="field"><label for="p-nick">ชื่อ</label><input type="text" id="p-nick" data-p="nick" data-t="s" placeholder="เช่น ต้น" maxlength="80"><span class="hint">ใช้ทักทายในหน้าสรุป ไม่บังคับ</span></div>
+          <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
         </form>
-        <div class="stack">
-          <div class="sheet">
-            <h2>ค่าลดหย่อนของคุณ</h2>
-            <div class="lines" id="allowLines"></div>
-            <div class="tip" id="allowTip"></div>
-          </div>
-          <div class="sheet">
-            <h2>บัญชีและข้อมูล</h2>
+        <div class="sheet">
+          <h2>บัญชีและข้อมูล</h2>
             <div class="acct">
               <p>เข้าสู่ระบบเป็น <b class="num" id="acct-email"></b></p>
               <p class="hint" id="storeNote2"></p>
@@ -576,12 +601,11 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
                 <button type="button" class="btn" id="exportBtn">ดาวน์โหลดข้อมูลของฉัน (JSON)</button>
               </div>
               <div class="btns">
-                <button type="button" class="btn danger" id="resetAll">ล้างรายได้และโปรไฟล์ทั้งหมด</button>
+                <button type="button" class="btn danger" id="resetAll">ล้างรายได้และค่าลดหย่อนทั้งหมด</button>
                 <button type="button" class="btn danger" id="deleteBtn">ลบบัญชีและข้อมูลทั้งหมด</button>
               </div>
               <p class="hint" id="acct-msg" role="status"></p>
             </div>
-          </div>
         </div>
       </div>
     </section>
@@ -710,11 +734,11 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       <div class="block">
         <h2>ใช้งานใน 5 ขั้น</h2>
         <ol class="flow">
-          <li><h3>ใส่โปรไฟล์</h3><p>ไปที่ "โปรไฟล์ผู้ใช้" เลือกสถานะสมรส จำนวนบุตร บิดามารดา และค่าประกันหรือกองทุนที่จ่ายทั้งปี</p></li>
+          <li><h3>ใส่ค่าลดหย่อน</h3><p>ไปที่ "ค่าลดหย่อน" เลือกสถานะสมรส จำนวนบุตร บิดามารดา และค่าประกันหรือกองทุนที่จ่ายทั้งปี</p></li>
           <li><h3>บันทึกรายได้รายเดือน</h3><p>ไปที่ "บันทึกรายได้รายเดือน" เลือกเดือน กรอกรายได้ของประเภท 40(1) ถึง 40(8) เดือนละครั้งหลังได้รับเงิน ภาษีที่ถูกหักคำนวณให้เอง หรือเลือกระบุยอดตาม 50 ทวิ</p></li>
           <li><h3>ดูสรุป</h3><p>หน้า "รายได้ที่หักภาษีแล้ว" แสดงภาษีที่ถูกหักไปแล้ว ภาษีทั้งปีโดยประมาณ และยอดที่ต้องจ่ายเพิ่มหรือได้คืน</p></li>
           <li><h3>ตรวจวิธีหัก</h3><p>เปิด "ภาษีแต่ละประเภทหักอย่างไร" เพื่อดูว่ารายได้ของคุณหักค่าใช้จ่ายและถูกหัก ณ ที่จ่ายอย่างไร</p></li>
-          <li><h3>วางแผนก่อนสิ้นปี</h3><p>ในหน้าสรุปมีคำแนะนำว่าลดหย่อนเพิ่ม 10,000 บาทประหยัดได้เท่าไร ลองเพิ่มกองทุนหรือประกันในโปรไฟล์เพื่อดูผล</p></li>
+          <li><h3>วางแผนก่อนสิ้นปี</h3><p>ในหน้าสรุปมีคำแนะนำว่าลดหย่อนเพิ่ม 10,000 บาทประหยัดได้เท่าไร ลองเพิ่มกองทุนหรือประกันในหน้าค่าลดหย่อนเพื่อดูผล</p></li>
         </ol>
       </div>
       <div class="cols">
@@ -807,17 +831,17 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       ex: "ดอกเบี้ยเงินฝาก หุ้นกู้ พันธบัตร เงินปันผลหุ้น ส่วนแบ่งกำไร",
       exp: "หักค่าใช้จ่ายไม่ได้",
       wht: "ดอกเบี้ยเงินฝากหัก 15% เงินปันผลหัก 10% เลือกไม่นำมารวมคำนวณได้ในหลายกรณี แล้วภาษีที่หักถือเป็นภาษีสุดท้าย",
-      note: "ถ้านำเงินปันผลมารวม ขอเครดิตภาษีเงินปันผลได้ ซึ่งแอปนี้ยังไม่คำนวณ ติ๊กตัวเลือกในโปรไฟล์ถ้าเลือกไม่นำมารวม" },
+      note: "ถ้านำเงินปันผลมารวม ขอเครดิตภาษีเงินปันผลได้ ซึ่งแอปนี้ยังไม่คำนวณ ติ๊กตัวเลือกในหน้าค่าลดหย่อนถ้าเลือกไม่นำมารวม" },
     { k: "c5", code: "40(5)", name: "ค่าเช่าทรัพย์สิน", short: "ค่าเช่าบ้าน คอนโด ที่ดิน รถ",
       ex: "ค่าเช่าบ้าน คอนโด ที่ดิน ยานพาหนะ ทรัพย์สินอื่น",
       exp: "หักเหมาตามประเภท บ้านและสิ่งปลูกสร้าง 30% ที่ดินเกษตร 20% ที่ดินอื่น 15% ยานพาหนะ 30% ทรัพย์สินอื่น 10% หรือเลือกหักตามจริง",
       wht: "ผู้เช่าที่เป็นนิติบุคคลหัก 5%",
-      note: "เลือกประเภททรัพย์สินได้ในโปรไฟล์" },
+      note: "เลือกประเภททรัพย์สินได้ในหน้าค่าลดหย่อน" },
     { k: "c6", code: "40(6)", name: "วิชาชีพอิสระ", short: "แพทย์ ทนาย วิศวกร สถาปนิก นักบัญชี",
       ex: "แพทย์ ทนายความ วิศวกร สถาปนิก นักบัญชี ศิลปินประณีตศิลป",
       exp: "แพทย์และประณีตศิลปกรรมหักเหมา 60% อาชีพอื่นหักเหมา 30% หรือหักตามจริง",
       wht: "ผู้จ่ายมักหัก 3%",
-      note: "เลือกประเภทวิชาชีพได้ในโปรไฟล์" },
+      note: "เลือกประเภทวิชาชีพได้ในหน้าค่าลดหย่อน" },
     { k: "c7", code: "40(7)", name: "รับเหมา (จัดหาวัสดุเอง)", short: "รับเหมาที่ออกวัสดุเอง",
       ex: "รับเหมาก่อสร้างหรือต่อเติมที่ผู้รับเหมาออกวัสดุเอง",
       exp: "หักเหมา 60% หรือหักตามจริง",
@@ -827,7 +851,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       ex: "ขายของออนไลน์ ร้านค้า ร้านอาหาร ขนส่ง เกษตรกรรม",
       exp: "หักเหมา 40 ถึง 80% ตามประเภทกิจการ หรือหักตามจริงเมื่อมีบัญชีและหลักฐาน",
       wht: "ขึ้นกับประเภทการจ่าย เช่น ค่าบริการ 3% ค่าโฆษณา 2% ค่าขนส่ง 1% หรือไม่ถูกหักเลย",
-      note: "ตั้งอัตราหักเหมาของกิจการคุณในโปรไฟล์" }
+      note: "ตั้งอัตราหักเหมาของกิจการคุณในหน้าค่าลดหย่อน" }
   ];
   var BR = [
     { from: 0, to: 150000, r: 0 }, { from: 150000, to: 300000, r: 5 }, { from: 300000, to: 500000, r: 10 },
@@ -1169,7 +1193,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     var b = this;
     if (b.getAttribute("data-arm") !== "1") {
       b.setAttribute("data-arm", "1"); b.textContent = "กดอีกครั้งเพื่อลบบัญชีถาวร";
-      $("acct-msg").textContent = "การลบทำย้อนกลับไม่ได้ ข้อมูลรายได้ โปรไฟล์ และการตั้งค่าแจ้งเตือนจะหายทั้งหมด";
+      $("acct-msg").textContent = "การลบทำย้อนกลับไม่ได้ ข้อมูลรายได้ ค่าลดหย่อน และการตั้งค่าแจ้งเตือนจะหายทั้งหมด";
       delTimer = setTimeout(function () { b.removeAttribute("data-arm"); b.textContent = "ลบบัญชีและข้อมูลทั้งหมด"; $("acct-msg").textContent = ""; }, 6000);
       return;
     }
@@ -1405,10 +1429,11 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
 
   function renderAllow(C) {
     var h = "";
-    if (!C.items.length) h = "<p class='empty'>ยังไม่มีค่าลดหย่อน กรอกข้อมูลด้านซ้าย</p>";
+    if (!C.items.length) h = "<p class='empty'>ยังไม่มีค่าลดหย่อน กรอกข้อมูลด้านล่าง</p>";
     C.items.forEach(function (it) { h += "<div class='line'><span>" + it[0] + "</span><span class='num'>" + N(it[1]) + "</span></div>"; });
     h += "<div class='line total'><span>รวมค่าลดหย่อน</span><span class='num'>" + N(C.allow) + "</span></div>";
     $("allowLines").innerHTML = h;
+    $("allowBig").textContent = B(C.allow);
     $("allowTip").textContent = C.gross > 0
       ? "ค่าลดหย่อนนี้ช่วยลดภาษีของคุณได้ประมาณ " + B(C.allow * C.marginal / 100) + " ที่อัตราขั้น " + C.marginal + "% รวมค่าใช้จ่ายหักเหมาอีก " + B(C.expense)
       : "บันทึกรายได้เพื่อดูผลของค่าลดหย่อนต่อภาษี";
@@ -1459,6 +1484,8 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   }
   function refreshRowStats() {   // ป้ายสถานะของรายได้แต่ละบรรทัด
     if (!loaded || !state) return;
+    var pst = JSON.stringify(profBody()) === srv.profile ? "saved" : (statusKind === "error" ? "error" : "saving");
+    Array.prototype.forEach.call(document.querySelectorAll(".rowstat[data-prof]"), function (el) { el.setAttribute("data-s", pst); el.textContent = ROWTXT[pst]; });
     var mo = state.months[selMonth] || {};
     Array.prototype.forEach.call(document.querySelectorAll("#mrows .rowstat"), function (el) {
       var c = el.getAttribute("data-cat"), st = rowState(c, (mo[c] || [])[+el.getAttribute("data-ei")]);
@@ -1618,7 +1645,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     if (!ys.length) { $("logHint").textContent = ""; body.innerHTML = "<p class='empty'>ยังไม่มีรายได้ที่บันทึกในปีใดเลย เมื่อบันทึกแล้วประวัติจะแสดงที่นี่</p>"; return; }
     var h = "";
     if (logYear === "all") {
-      $("logHint").textContent = "คิดจากรายได้ที่บันทึกจริงของแต่ละปี ไม่รวมคาดการณ์ ใช้ข้อมูลโปรไฟล์ชุดเดียวกันทุกปี";
+      $("logHint").textContent = "คิดจากรายได้ที่บันทึกจริงของแต่ละปี ไม่รวมคาดการณ์ ใช้ค่าลดหย่อนชุดเดียวกันทุกปี";
       var st = {}, mx = 0, ti = 0, tw = 0, tt = 0, td = 0;
       ys.forEach(function (y) { st[y] = yearStats(y).C; mx = Math.max(mx, st[y].recInc); });
       h += "<div class='tablewrap'><table><thead><tr><th>ปีภาษี</th><th class='r'>รายได้ที่บันทึก</th><th class='r'>ภาษีที่ถูกหัก</th><th class='r'>ภาษีที่ต้องเสีย (ประมาณ)</th><th class='r'>ผลตอนยื่น</th></tr></thead><tbody>";
@@ -1714,6 +1741,8 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   $("pform").addEventListener("input", function (e) { handleProfile(e.target); });
   $("pform").addEventListener("change", function (e) { handleProfile(e.target); });
   $("pform").addEventListener("submit", function (e) { e.preventDefault(); });
+  $("setform").addEventListener("input", function (e) { handleProfile(e.target); });
+  $("setform").addEventListener("submit", function (e) { e.preventDefault(); });
   function handleProfile(el) {
     var k = el.getAttribute("data-p"); if (!k) return;
     var t = el.getAttribute("data-t"), v;
@@ -1728,9 +1757,9 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   var resetTimer = null;
   $("resetAll").addEventListener("click", function () {
     var b = $("resetAll");
-    if (b.getAttribute("data-arm") === "1") { clearTimeout(resetTimer); b.removeAttribute("data-arm"); b.textContent = "ล้างรายได้และโปรไฟล์ทั้งหมด"; state = blank(); logYear = "all"; scheduleSave(); renderAll(); return; }
+    if (b.getAttribute("data-arm") === "1") { clearTimeout(resetTimer); b.removeAttribute("data-arm"); b.textContent = "ล้างรายได้และค่าลดหย่อนทั้งหมด"; state = blank(); logYear = "all"; scheduleSave(); renderAll(); return; }
     b.setAttribute("data-arm", "1"); b.textContent = "กดอีกครั้งเพื่อยืนยันการล้าง";
-    resetTimer = setTimeout(function () { b.removeAttribute("data-arm"); b.textContent = "ล้างรายได้และโปรไฟล์ทั้งหมด"; }, 4000);
+    resetTimer = setTimeout(function () { b.removeAttribute("data-arm"); b.textContent = "ล้างรายได้และค่าลดหย่อนทั้งหมด"; }, 4000);
   });
 
   /* ---------- ค้นหารายการ → GET /api/entries?year&month&category&q ---------- */
@@ -1786,7 +1815,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   });
 
   /* ---------- routing ---------- */
-  var PAGES = ["summary", "monthly", "search", "profile", "notify", "rules", "guide"];
+  var PAGES = ["summary", "monthly", "search", "profile", "notify", "rules", "guide", "settings"];
   function show() {
     var h = (location.hash || "").replace("#", "");
     if (PAGES.indexOf(h) < 0) h = "summary";
