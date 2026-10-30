@@ -105,6 +105,8 @@ a.golink { color: var(--accent); text-decoration: underline; cursor: pointer; }
 .allowtop h2 { margin: 10px 0 0; font-size: 1.05rem; }
 .bigfig { font-size: 2.3rem; font-weight: 600; line-height: 1.15; }
 .ent.pent { padding-right: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.ent.ded { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 0.8fr); }
+.ent.ded + .ent.ded { margin-top: 10px; }
 .ent.pent .field.wide { grid-column: 1 / -1; }
 .stack.narrow { max-width: 720px; }
 .rowstat { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--muted); }
@@ -293,7 +295,7 @@ footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; display: flex;
   .cards, .cols, .flow { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 760px) {
-  .ent { grid-template-columns: minmax(0, 1fr); }
+  .ent, .ent.ded { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   .fields { grid-template-columns: minmax(0, 1fr); }
@@ -521,7 +523,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
                 <span class="hint">คู่สมรสไม่มีเงินได้ลดหย่อนได้ 60,000 บาท</span>
               </div>
             
-              <div class="field"><label for="p-kids">จำนวนบุตร</label><input type="text" inputmode="numeric" id="p-kids" data-p="kids" data-t="i"><span class="hint">คนละ 30,000 บาท อายุไม่เกิน 20 ปี หรือไม่เกิน 25 ปีถ้ากำลังเรียนระดับอุดมศึกษา</span></div>
+              <div class="field"><label for="p-kids">จำนวนบุตรที่เกิดก่อนปี 2561</label><input type="text" inputmode="numeric" id="p-kids" data-p="kids" data-t="i"><span class="hint">คนละ 30,000 บาท อายุไม่เกิน 20 ปี หรือไม่เกิน 25 ปีถ้ากำลังเรียนระดับอุดมศึกษา</span></div>
               <div class="field"><label for="p-kids2">บุตรคนที่ 2 ขึ้นไปที่เกิดปี 2561 เป็นต้นมา</label><input type="text" inputmode="numeric" id="p-kids2" data-p="kids2" data-t="i"><span class="hint">ได้เพิ่มอีกคนละ 30,000 บาท</span></div>
               <div class="field"><label for="p-parents">บิดามารดาของตัวเอง (0 ถึง 2 คน)</label><input type="text" inputmode="numeric" id="p-parents" data-p="parents" data-t="i"><span class="hint">คนละ 30,000 บาท อายุ 60 ปีขึ้นไป รายได้ไม่เกิน 30,000 บาทต่อปี</span></div>
               <div class="field"><label for="p-spParents">บิดามารดาของคู่สมรส (0 ถึง 2 คน)</label><input type="text" inputmode="numeric" id="p-spParents" data-p="spParents" data-t="i"><span class="hint">ใช้สิทธิ์ได้เมื่อสมรสแล้ว เงื่อนไขเดียวกัน</span></div>
@@ -530,22 +532,14 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
               <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
             </div></div>
           </section>
-          <section class="cblock">
-            <div class="chead"><div class="who"><span class="badge">ประกัน</span><div><div class="wn">ประกันและเงินออม (ยอดจ่ายทั้งปี)</div><div class="hint">ประกันสังคม ประกันชีวิตและสุขภาพ กองทุนเกษียณ</div></div></div></div>
-            <div class="ents"><div class="ent pent">
-              <div class="field"><label for="p-ss">เงินสมทบประกันสังคม</label><input type="text" inputmode="decimal" id="p-ss" data-p="ss" data-t="n"><span class="hint">หักตามจริง สูงสุด 9,000 บาท</span></div>
-              <div class="field"><label for="p-life">เบี้ยประกันชีวิต</label><input type="text" inputmode="decimal" id="p-life" data-p="life" data-t="n"><span class="hint">สูงสุด 100,000 บาท</span></div>
-              <div class="field"><label for="p-health">เบี้ยประกันสุขภาพตัวเอง</label><input type="text" inputmode="decimal" id="p-health" data-p="health" data-t="n"><span class="hint">สูงสุด 25,000 บาท รวมกับประกันชีวิตไม่เกิน 100,000</span></div>
-              <div class="field"><label for="p-phealth">เบี้ยประกันสุขภาพบิดามารดา</label><input type="text" inputmode="decimal" id="p-phealth" data-p="phealth" data-t="n"><span class="hint">สูงสุด 15,000 บาท</span></div>
-              <div class="field wide"><label for="p-retire">กองทุนเพื่อการเกษียณ (กองทุนสำรองเลี้ยงชีพ, RMF, SSF, กอช., ประกันบำนาญ)</label><input type="text" inputmode="decimal" id="p-retire" data-p="retire" data-t="n"><span class="hint">รวมกันไม่เกิน 500,000 บาท และไม่เกิน 30% ของรายได้ แอปนี้ใช้เพดานรวมอย่างง่าย</span></div>
-            
-              <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
-            </div></div>
+          <section class="cblock" id="dedBlock">
+            <div class="chead"><div class="who"><span class="badge">ประกัน</span><div><div class="wn">ประกันและดอกเบี้ย (รายปี)</div><div class="hint">ประกันสังคม ประกันชีวิตและสุขภาพ ดอกเบี้ยเงินกู้ซื้อบ้าน หุ้นและกองทุน เลือกประเภท ใส่ชื่อรายการ ยอดทั้งปี และภาษีที่ถูกหักเป็น %</div></div></div>
+              <button type="button" class="btn add" id="dedAdd">+ เพิ่มรายการ</button></div>
+            <div class="ents" id="dedRows"></div>
           </section>
           <section class="cblock">
-            <div class="chead"><div class="who"><span class="badge">อื่น ๆ</span><div><div class="wn">ดอกเบี้ยบ้านและเงินบริจาค</div><div class="hint">ดอกเบี้ยเงินกู้ซื้อบ้าน เงินบริจาคทั่วไป</div></div></div></div>
+            <div class="chead"><div class="who"><span class="badge">อื่น ๆ</span><div><div class="wn">เงินบริจาค</div><div class="hint">เงินบริจาคทั่วไป</div></div></div></div>
             <div class="ents"><div class="ent pent">
-              <div class="field"><label for="p-home">ดอกเบี้ยเงินกู้ซื้อบ้านทั้งปี</label><input type="text" inputmode="decimal" id="p-home" data-p="home" data-t="n"><span class="hint">สูงสุด 100,000 บาท</span></div>
               <div class="field"><label for="p-donate">เงินบริจาคทั่วไป</label><input type="text" inputmode="decimal" id="p-donate" data-p="donate" data-t="n"><span class="hint">ไม่เกิน 10% ของเงินได้หลังหักลดหย่อน</span></div>
             
               <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
@@ -705,7 +699,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
               <tr><td>เบี้ยประกันชีวิต</td><td class="r"><span class="num">100,000</span></td><td>กรมธรรม์ระยะยาวตั้งแต่ 10 ปีขึ้นไป</td></tr>
               <tr><td>เบี้ยประกันสุขภาพ</td><td class="r"><span class="num">25,000</span></td><td>รวมกับประกันชีวิตไม่เกิน 100,000</td></tr>
               <tr><td>ประกันสุขภาพบิดามารดา</td><td class="r"><span class="num">15,000</span></td><td>แยกจากของตัวเอง</td></tr>
-              <tr><td>กองทุนเพื่อการเกษียณ</td><td class="r"><span class="num">500,000</span></td><td>รวมทุกกองทุน แต่ละประเภทมีเพดานของตัวเอง</td></tr>
+              <tr><td>หุ้นและกองทุน (กองทุนเพื่อการเกษียณ)</td><td class="r"><span class="num">500,000</span></td><td>รวมทุกกองทุน แต่ละประเภทมีเพดานของตัวเอง</td></tr>
               <tr><td>ดอกเบี้ยเงินกู้ซื้อบ้าน</td><td class="r"><span class="num">100,000</span></td><td>ที่อยู่อาศัยที่จำนองกับสถาบันการเงิน</td></tr>
               <tr><td>เงินบริจาค</td><td class="r"><span class="num">10% ของเงินได้</span></td><td>e-Donation บางรายการหักได้ 2 เท่า</td></tr>
             </tbody>
@@ -872,14 +866,15 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
 
   /* ---------- state ---------- */
   function defProfile() {
-    return { nick: "", marital: "single", kids: 0, kids2: 0, parents: 0, spParents: 0, disabled: 0, ss: 0, life: 0, health: 0, phealth: 0, retire: 0, home: 0, donate: 0, rentType: 30, profType: 30, bizRate: 60, excl4: false };
+    return { nick: "", marital: "single", kids: 0, kids2: 0, parents: 0, spParents: 0, disabled: 0, donate: 0, rentType: 30, profType: 30, bizRate: 60, excl4: false };
   }
   function blank() { var s = { v: 2, sample: false, project: true, profile: defProfile(), years: {}, months: {}, wm: {}, year: NOW_YEAR }; bindYear(s, NOW_YEAR); return s; }
   // state.months ชี้ไปที่เดือนของปีที่กำลังดู เพื่อให้โค้ดเดิมทั้งหมดใช้ได้โดยไม่ต้องรู้เรื่องปี
-  function bindYear(s, y) { s.year = y; if (!s.years[y]) s.years[y] = { months: {} }; s.months = s.years[y].months; }
+  function newYear() { return { months: {}, ded: [] }; }
+  function bindYear(s, y) { s.year = y; if (!s.years[y]) s.years[y] = newYear(); if (!Array.isArray(s.years[y].ded)) s.years[y].ded = []; s.months = s.years[y].months; }
   function validYear(y) { y = parseInt(y, 10); return y >= 2500 && y <= 2700 ? y : 0; }
   function sampleState() {
-    var s = blank(); s.sample = true; s.profile.parents = 2; s.profile.ss = 9000;
+    var s = blank(); s.sample = true; s.profile.parents = 2; s.years[NOW_YEAR].ded.push({ k: "ss", n: "ประกันสังคม", i: 9000, p: 0 });
     for (var m = 1; m <= 9; m++) s.months[m] = { c1: [{ i: 50000, w: 0, t: "auto", n: "เงินเดือนบริษัท" }] };
     s.months[6].c2 = [{ i: 15000, w: 0, t: "3", n: "งานออกแบบฟรีแลนซ์" }];
     s.months[3].c4 = [{ i: 1200, w: 0, t: "15", n: "ดอกเบี้ยออมทรัพย์" }, { i: 2000, w: 0, t: "10", n: "เงินปันผลหุ้น" }];
@@ -890,6 +885,14 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     if (v[0] && typeof v[0] === "object" && !Array.isArray(v[0])) return v.map(function (e) { var r = { i: num(e.i), w: num(e.w), t: String(e.t || ""), n: String(e.n || "") }; if (e.id) r.id = e.id; return r; });
     var i = num(v[0]), w = num(v[1]);
     return [{ i: i, w: w, t: v[2] ? String(v[2]) : (v.length < 3 ? (w > 0 ? "manual" : "none") : ""), n: "" }];
+  }
+  var DEDK = [["ss", "ประกันสังคม"], ["life", "ประกันชีวิต"], ["health", "ประกันสุขภาพตัวเอง"], ["phealth", "ประกันสุขภาพบิดามารดา"], ["home", "ดอกเบี้ยเงินกู้ซื้อบ้าน"], ["fund", "หุ้นและกองทุน"]];
+  function normDed(v) {
+    if (!Array.isArray(v)) return [];
+    return v.filter(function (e) { return e && typeof e === "object"; }).map(function (e) {
+      var k = DEDK.some(function (d) { return d[0] === e.k; }) ? e.k : "life", r = { k: k, n: String(e.n || ""), i: num(e.i), p: num(e.p) };
+      if (e.id) r.id = e.id; return r;
+    });
   }
   function normalize(o) {
     var s = blank();
@@ -910,11 +913,12 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     if (o.years && typeof o.years === "object") {
       Object.keys(o.years).forEach(function (yk) {
         var y = validYear(yk); if (!y || !o.years[yk]) return;
-        if (!s.years[y]) s.years[y] = { months: {} };
+        if (!s.years[y]) s.years[y] = newYear();
         readMonths(o.years[yk].months, s.years[y].months);
+        s.years[y].ded = normDed(o.years[yk].ded);
       });
     } else if (o.months) { // ข้อมูลรุ่นเก่า ยังไม่แยกปี
-      s.years[LEGACY_YEAR] = { months: {} };
+      s.years[LEGACY_YEAR] = newYear();
       readMonths(o.months, s.years[LEGACY_YEAR].months);
     }
     bindYear(s, NOW_YEAR);
@@ -931,12 +935,15 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     Object.keys(c.years).forEach(function (y) {
       var mo = c.years[y].months || {};
       Object.keys(mo).forEach(function (m) { pruneOne(mo, m); });
-      if (!Object.keys(mo).length) delete c.years[y];
+      c.years[y].ded = (c.years[y].ded || []).filter(keepDed);
+      if (!Object.keys(mo).length && !c.years[y].ded.length) delete c.years[y];
     });
     return c;
   }
   function hasName(e) { return !!(e.n && String(e.n).trim()); }
   function keepEnt(e) { return (e.i || 0) > 0 || (e.w || 0) > 0 || !!(e.n && String(e.n).trim()); }
+  function hasDedName(e) { return !!(e.n && String(e.n).trim()); }
+  function keepDed(e) { return (e.i || 0) > 0 || (e.p || 0) > 0 || hasDedName(e); }
   function pruneOne(months, m) {
     var mo = months[m]; if (!mo) return;
     Object.keys(mo).forEach(function (k) {
@@ -981,15 +988,17 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   /* ซิงก์กับเซิร์ฟเวอร์แบบเทียบส่วนต่าง: แก้เฉพาะสิ่งที่เปลี่ยน
      โปรไฟล์ → PUT /api/profile, วิธีหักภาษี → PUT/DELETE /api/withhold-prefs/{ประเภท},
      รายการรายได้ → POST/PUT/DELETE /api/entries (รายการใหม่ไม่มี id จนกว่าเซิร์ฟเวอร์สร้างให้) */
-  var srv = { profile: "", wm: {}, ent: {} };
+  var srv = { profile: "", wm: {}, ent: {}, ded: {} };
   function profBody() {
     var p = state.profile, b = { project: !!state.project, sample: !!state.sample };
     Object.keys(p).forEach(function (k) { b[k] = (typeof p[k] === "boolean" || typeof p[k] === "string") ? p[k] : num(p[k]); });
     return b;
   }
   function entBody(y, m, c, e) { return { yearBe: parseInt(y, 10), month: parseInt(m, 10), category: c, amount: num(e.i), withheld: num(e.w), method: String(e.t || ""), name: String(e.n || "").trim() }; }
+  function dedBody(y, e) { return { yearBe: parseInt(y, 10), kind: String(e.k), name: String(e.n || "").trim(), amount: num(e.i), pct: clamp(num(e.p), 0, 100) }; }
   function snapshotServer() {
-    srv.profile = JSON.stringify(profBody()); srv.wm = JSON.parse(JSON.stringify(state.wm || {})); srv.ent = {};
+    srv.profile = JSON.stringify(profBody()); srv.wm = JSON.parse(JSON.stringify(state.wm || {})); srv.ent = {}; srv.ded = {};
+    Object.keys(state.years).forEach(function (y) { (state.years[y].ded || []).forEach(function (e) { if (e.id) srv.ded[e.id] = JSON.stringify(dedBody(y, e)); }); });
     Object.keys(state.years).forEach(function (y) { var mo = state.years[y].months || {};
       Object.keys(mo).forEach(function (m) { Object.keys(mo[m]).forEach(function (c) { mo[m][c].forEach(function (e) { if (e.id) srv.ent[e.id] = JSON.stringify(entBody(y, m, c, e)); }); }); }); });
   }
@@ -1020,7 +1029,25 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
         }
       }
     }
+    var wantD = {};
+    for (var yd = 0; yd < ys.length; yd++) {
+      var dl = state.years[ys[yd]].ded || [];
+      for (var di = 0; di < dl.length; di++) {
+        var d = dl[di];
+        if (!keepDed(d)) continue;
+        if (!hasDedName(d)) { blocked++; if (d.id) wantD[d.id] = 1; continue; }
+        body = dedBody(ys[yd], d);
+        if (!d.id) {
+          r = await api("POST", "/api/deductions", body); if (!r.ok) return r;
+          d.id = r.data.id; srv.ded[d.id] = JSON.stringify(body); wantD[d.id] = 1;
+        } else {
+          wantD[d.id] = 1;
+          if (srv.ded[d.id] !== JSON.stringify(body)) { r = await api("PUT", "/api/deductions/" + d.id, body); if (!r.ok) return r; srv.ded[d.id] = JSON.stringify(body); }
+        }
+      }
+    }
     for (var id in srv.ent) if (!want[id]) { r = await api("DELETE", "/api/entries/" + id); if (!r.ok && r.status !== 404) return r; delete srv.ent[id]; }
+    for (var did in srv.ded) if (!wantD[did]) { r = await api("DELETE", "/api/deductions/" + did); if (!r.ok && r.status !== 404) return r; delete srv.ded[did]; }
     return { ok: true, blocked: blocked };
   }
   function flush() {
@@ -1247,6 +1274,9 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     a.forEach(function (e, j) { ti += e.i || 0; tw += w[j]; });
     return [ti, tw];
   }
+  function dedList() { var Y = state.years[state.year]; return Y && Array.isArray(Y.ded) ? Y.ded : []; }
+  function dedSums() { var D = { ss: 0, life: 0, health: 0, phealth: 0, home: 0, fund: 0 }; dedList().forEach(function (e) { if (e.k in D) D[e.k] += e.i || 0; }); return D; }
+  function dedCredit() { var t = 0; dedList().forEach(function (e) { t += (e.i || 0) * clamp(e.p || 0, 0, 100) / 100; }); return t; }
   function allowanceItems(P, gross) {
     var kids = Math.floor(num(P.kids)), kids2 = Math.min(Math.floor(num(P.kids2)), kids);
     var items = [];
@@ -1257,11 +1287,12 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     add("บุตรคนที่ 2 เป็นต้นไป เกิดปี 2561+", kids2 * 30000);
     add("บิดามารดา", (Math.min(Math.floor(num(P.parents)), 2) + (P.marital === "single" ? 0 : Math.min(Math.floor(num(P.spParents)), 2))) * 30000);
     add("ผู้พิการที่เลี้ยงดู", Math.floor(num(P.disabled)) * 60000);
-    add("ประกันสังคม", Math.min(num(P.ss), 9000));
-    add("ประกันชีวิตและสุขภาพ", Math.min(Math.min(num(P.life), 100000) + Math.min(num(P.health), 25000), 100000));
-    add("ประกันสุขภาพบิดามารดา", Math.min(num(P.phealth), 15000));
-    add("กองทุนเพื่อการเกษียณ", Math.min(num(P.retire), 500000, gross * 0.3));
-    add("ดอกเบี้ยเงินกู้บ้าน", Math.min(num(P.home), 100000));
+    var D = dedSums();
+    add("ประกันสังคม", Math.min(D.ss, 9000));
+    add("ประกันชีวิตและสุขภาพ", Math.min(Math.min(D.life, 100000) + Math.min(D.health, 25000), 100000));
+    add("ประกันสุขภาพบิดามารดา", Math.min(D.phealth, 15000));
+    add("หุ้นและกองทุน", Math.min(D.fund, 500000, gross * 0.3));
+    add("ดอกเบี้ยเงินกู้ซื้อบ้าน", Math.min(D.home, 100000));
     return items;
   }
   function withYear(y, fn) {
@@ -1317,6 +1348,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     var whRecorded = 0, credit = 0, finalWh = 0;
     CATS.forEach(function (c) { whRecorded += whAct[c.k]; if (c.k === "c4" && ex4) finalWh += whAct[c.k]; else credit += whAct[c.k]; });
     credit += pW;
+    var dedWh = dedCredit(); credit += dedWh; whRecorded += dedWh;
     var recInc = 0; CATS.forEach(function (c) { recInc += act[c.k]; });
     var first = 0; for (m = 1; m <= 12; m++) { if (mInc[m] > 0 || mWh[m] > 0) { if (!first) first = m; } }
     var lastRec = 0; for (m = 1; m <= 12; m++) { if (mInc[m] > 0 || mWh[m] > 0) lastRec = m; }
@@ -1486,6 +1518,11 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     if (!loaded || !state) return;
     var pst = JSON.stringify(profBody()) === srv.profile ? "saved" : (statusKind === "error" ? "error" : "saving");
     Array.prototype.forEach.call(document.querySelectorAll(".rowstat[data-prof]"), function (el) { el.setAttribute("data-s", pst); el.textContent = ROWTXT[pst]; });
+    var da = dedList();
+    Array.prototype.forEach.call(document.querySelectorAll("#dedRows .rowstat"), function (el) {
+      var st = dedState(da[+el.getAttribute("data-di")]);
+      el.setAttribute("data-s", st); el.textContent = ROWTXT[st] || "";
+    });
     var mo = state.months[selMonth] || {};
     Array.prototype.forEach.call(document.querySelectorAll("#mrows .rowstat"), function (el) {
       var c = el.getAttribute("data-cat"), st = rowState(c, (mo[c] || [])[+el.getAttribute("data-ei")]);
@@ -1499,6 +1536,63 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       if (en && keepEnt(en) && !hasName(en)) el.setAttribute("aria-invalid", "true"); else el.removeAttribute("aria-invalid");
     });
   }
+  /* ---------- ประกันและดอกเบี้ย (รายปี): แต่ละบรรทัด = 1 แถวใน deduction_entry ---------- */
+  function dedDisplay() { var a = dedList(); return a.length ? a : [{ k: "life", n: "", i: 0, p: 0 }]; }
+  function dedHtml(j, e) {
+    var opts = DEDK.map(function (d) { return "<option value='" + d[0] + "'" + (d[0] === e.k ? " selected" : "") + ">" + d[1] + "</option>"; }).join("");
+    return "<div class='ent ded'>" +
+      "<div class='field'><label for='dk-" + j + "'>ประเภท</label><select id='dk-" + j + "' data-df='k' data-di='" + j + "'>" + opts + "</select></div>" +
+      "<div class='field'><label for='dn-" + j + "'>ชื่อรายการ (จำเป็น)</label><input type='text' id='dn-" + j + "' data-df='n' data-di='" + j + "' value='" + esc(e.n || "") + "' placeholder='เช่น เบี้ยประกัน AIA, กองทุน SSF' maxlength='200' aria-required='true'><span class='hint need'>ต้องกรอกชื่อรายการ จึงจะบันทึกได้</span></div>" +
+      "<div class='field'><label for='di-" + j + "'>รายได้ (บาท)</label><input type='text' inputmode='decimal' id='di-" + j + "' data-df='i' data-di='" + j + "' value='" + (e.i || "") + "' placeholder='0'></div>" +
+      "<div class='field'><label for='dp-" + j + "'>ภาษีที่ถูกหัก (%)</label><input type='text' inputmode='decimal' id='dp-" + j + "' data-df='p' data-di='" + j + "' value='" + (e.p || "") + "' placeholder='0'></div>" +
+      "<div class='rowstat' id='drs-" + j + "' data-di='" + j + "' data-s='none' role='status'></div>" +
+      "<button type='button' class='x' id='drm-" + j + "' data-drm='1' data-di='" + j + "' aria-label='ลบรายการนี้'>×</button></div>";
+  }
+  function renderDed() {
+    $("dedRows").innerHTML = dedDisplay().map(function (e, j) { return dedHtml(j, e); }).join("");
+    refreshRowStats(); markDedNames();
+  }
+  function dedState(e) {
+    if (!e || !keepDed(e)) return "none";
+    if (!hasDedName(e)) return "needname";
+    if (e.id && srv.ded[e.id] === JSON.stringify(dedBody(state.year, e))) return "saved";
+    return statusKind === "error" ? "error" : "saving";
+  }
+  function markDedNames() {
+    var a = dedList();
+    Array.prototype.forEach.call(document.querySelectorAll("#dedRows input[data-df='n']"), function (el) {
+      var e = a[+el.getAttribute("data-di")];
+      if (e && keepDed(e) && !hasDedName(e)) el.setAttribute("aria-invalid", "true"); else el.removeAttribute("aria-invalid");
+    });
+  }
+  function dedAt(j) {
+    var a = dedList();
+    while (a.length <= j) a.push({ k: "life", n: "", i: 0, p: 0 });
+    return a[j];
+  }
+  $("dedRows").addEventListener("input", function (e) {
+    var t = e.target, f = t.getAttribute("data-df"); if (!f || f === "k") return;
+    var en = dedAt(+t.getAttribute("data-di"));
+    if (f === "n") en.n = t.value.slice(0, 200); else if (f === "i") en.i = num(t.value); else en.p = clamp(num(t.value), 0, 100);
+    scheduleSave(); updateDerived(); markDedNames();
+  });
+  $("dedRows").addEventListener("change", function (e) {
+    var t = e.target; if (t.getAttribute("data-df") !== "k") return;
+    dedAt(+t.getAttribute("data-di")).k = t.value;
+    scheduleSave(); updateDerived();
+  });
+  $("dedRows").addEventListener("click", function (e) {
+    var rm = e.target.closest("[data-drm]"); if (!rm) return;
+    dedList().splice(+rm.getAttribute("data-di"), 1);
+    renderDed(); updateDerived(); scheduleSave();
+  });
+  $("dedAdd").addEventListener("click", function () {
+    var a = dedList();
+    if (!a.length) a.push({ k: "life", n: "", i: 0, p: 0 });
+    a.push({ k: "life", n: "", i: 0, p: 0 });
+    renderDed(); updateDerived(); scheduleSave();
+    var el = $("dn-" + (a.length - 1)); if (el) el.focus();
+  });
   function renderCat(k) {
     $("ents-" + k).innerHTML = displayEnts(k).map(function (e, j) { return entHtml(k, j, e); }).join("");
     if (typeof refreshRowStats === "function") refreshRowStats();
@@ -1586,7 +1680,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     bindYear(state, y);
     var m = selMonth; renderAll(); if (keepMonth) { selMonth = m; renderChips(); renderMonth(); updateDerived(); }
   }
-  function renderAll() { selMonth = defaultMonth(); fillYearSel(); yearLabels(); initProfile(); renderChips(); renderMonth(); updateDerived(); }
+  function renderAll() { selMonth = defaultMonth(); fillYearSel(); yearLabels(); initProfile(); renderDed(); renderChips(); renderMonth(); updateDerived(); }
 
   /* ---------- เพิ่ม/ลบปีภาษี → POST /api/years, DELETE /api/years/{ปี} ---------- */
   var yearDelTimer = null;
@@ -1617,6 +1711,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     if (!r.ok && r.status !== 404) { yearMsg("ลบปีไม่สำเร็จ ลองใหม่อีกครั้ง"); return; }
     delete state.years[y];
     Object.keys(srv.ent).forEach(function (id) { try { if (JSON.parse(srv.ent[id]).yearBe === y) delete srv.ent[id]; } catch (e2) {} });
+    Object.keys(srv.ded).forEach(function (id) { try { if (JSON.parse(srv.ded[id]).yearBe === y) delete srv.ded[id]; } catch (e3) {} });
     if (logYear === String(y)) logYear = "all";
     var rest = Object.keys(state.years).map(Number).sort(function (a, c) { return c - a; });
     setYear(y !== NOW_YEAR ? NOW_YEAR : (rest[0] || NOW_YEAR));

@@ -2,6 +2,7 @@ package th.taxbook.data;
 
 import java.math.BigDecimal;
 import th.taxbook.data.entity.IncomeCategory;
+import th.taxbook.data.entity.DeductionEntry;
 import th.taxbook.data.entity.IncomeEntry;
 import th.taxbook.data.entity.TaxProfile;
 
@@ -36,6 +37,13 @@ public final class Dtos {
         static Entry of(IncomeEntry e) {
             return new Entry(e.getId(), e.getTaxYear().getYearBe(), e.getMonth(), e.getCategory().getCode(),
                 e.getAmount(), e.getWithheld(), e.getMethod(), e.getName());
+        }
+    }
+
+    /** ค่าลดหย่อนกลุ่มประกันและดอกเบี้ย (รายปี) หนึ่งรายการ */
+    public record Deduction(Long id, int yearBe, String kind, String name, BigDecimal amount, BigDecimal withheldPct) {
+        static Deduction of(DeductionEntry d) {
+            return new Deduction(d.getId(), d.getTaxYear().getYearBe(), d.getKind(), d.getName(), d.getAmount(), d.getWithheldPct());
         }
     }
 

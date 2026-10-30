@@ -26,11 +26,16 @@ public final class DataValidator {
     public record EntryInput(Integer yearBe, Integer month, String category, BigDecimal amount, BigDecimal withheld,
                              String method, String name) {}
 
+    /** ฟิลด์ที่เป็น null แปลว่าไม่ได้ส่งมา (ตอนแก้ไข = คงค่าเดิม) */
+    public record DeductionInput(Integer yearBe, String kind, String name, BigDecimal amount, BigDecimal pct) {}
+
     public record ProfileInput(String nick, String marital, int kids, int kids2, int parents, int spParents, int disabled,
                                BigDecimal ss, BigDecimal life, BigDecimal health, BigDecimal phealth, BigDecimal retire,
                                BigDecimal home, BigDecimal donate, BigDecimal rentType, BigDecimal profType,
                                BigDecimal bizRate, boolean excl4, boolean project, boolean sample) {}
 
+    public static final Set<String> DEDUCTION_KINDS = Set.of("ss", "life", "health", "phealth", "home", "fund");
+    private static final Set<String> DEDUCTION_KEYS = Set.of("yearBe", "kind", "name", "amount", "pct");
     private static final Set<String> ENTRY_KEYS = Set.of("yearBe", "month", "category", "amount", "withheld", "method", "name");
     private static final Set<String> PROFILE_KEYS = Set.of("nick", "marital", "kids", "kids2", "parents", "spParents", "disabled",
         "ss", "life", "health", "phealth", "retire", "home", "donate", "rentType", "profType", "bizRate", "excl4", "project", "sample");
@@ -112,6 +117,31 @@ public final class DataValidator {
             name = n.strip();
         } else if (create) throw new Invalid("name_required");
         return new EntryInput(year, month, cat, amount, withheld, method, name);
+    }
+
+    // ---------- ค่าลดหย่อนกลุ่มประกันและดอกเบี้ย ----------
+
+    /** create = true: ต้องมี yearBe, kind, name (ชื่อห้ามว่าง) ส่วน amount/pct ไม่ส่ง = 0 (pct = % ภาษีที่ถูกหัก 0-100) */
+    public static DeductionInput deduction(Map<String, Object> body, boolean create) {
+        if (body == null) throw new Invalid("invalid_body");
+        for (String k : body.keySet()) if (!DEDUCTION_KEYS.contains(k)) throw new Invalid("unknown_field_" + k);
+        if (create) for (String k : new String[]{"yearBe", "kind"})
+            if (body.get(k) == null) throw new Invalid("missing_" + k);
+        Integer year = body.get("yearBe") == null ? null : yearBe(body.get("yearBe"));
+        String kind = null;
+        if (body.get("kind") != null) {
+            if (!(body.get("kind") instanceof String k) || !DEDUCTION_KINDS.contains(k)) throw new Invalid("invalid_kind");
+            kind = k;
+        }
+        String name = null;
+        if (body.get("name") != null) {
+            if (!(body.get("name") instanceof String n) || n.length() > MAX_NAME) throw new Invalid("invalid_name");
+            if (n.isBlank()) throw new Invalid("name_required");
+            name = n.strip();
+        } else if (create) throw new Invalid("name_required");
+        BigDecimal amount = body.get("amount") == null ? (create ? BigDecimal.ZERO.setScale(2) : null) : money(body.get("amount"), "amount", MAX_MONEY);
+        BigDecimal pct = body.get("pct") == null ? (create ? BigDecimal.ZERO.setScale(2) : null) : money(body.get("pct"), "pct", new BigDecimal("100"));
+        return new DeductionInput(year, kind, name, amount, pct);
     }
 
     // ---------- โปรไฟล์ ----------

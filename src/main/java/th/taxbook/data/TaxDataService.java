@@ -10,12 +10,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import th.taxbook.data.entity.DeductionEntry;
 import th.taxbook.data.entity.IncomeCategory;
 import th.taxbook.data.entity.IncomeEntry;
 import th.taxbook.data.entity.TaxProfile;
 import th.taxbook.data.entity.TaxYear;
 import th.taxbook.data.entity.User;
 import th.taxbook.data.entity.WithholdPref;
+import th.taxbook.data.repo.DeductionEntryRepository;
 import th.taxbook.data.repo.IncomeCategoryRepository;
 import th.taxbook.data.repo.IncomeEntryRepository;
 import th.taxbook.data.repo.TaxProfileRepository;
@@ -23,6 +25,7 @@ import th.taxbook.data.repo.TaxYearRepository;
 import th.taxbook.data.repo.UserRepository;
 import th.taxbook.data.repo.WithholdPrefRepository;
 import th.taxbook.validation.DataValidator;
+import th.taxbook.validation.DataValidator.DeductionInput;
 import th.taxbook.validation.DataValidator.EntryInput;
 import th.taxbook.validation.DataValidator.Invalid;
 import th.taxbook.validation.DataValidator.ProfileInput;
@@ -43,15 +46,18 @@ public class TaxDataService {
     private final IncomeCategoryRepository categories;
     private final IncomeEntryRepository entries;
     private final WithholdPrefRepository prefs;
+    private final DeductionEntryRepository deductions;
 
     public TaxDataService(UserRepository users, TaxProfileRepository profiles, TaxYearRepository years,
-                          IncomeCategoryRepository categories, IncomeEntryRepository entries, WithholdPrefRepository prefs) {
+                          IncomeCategoryRepository categories, IncomeEntryRepository entries, WithholdPrefRepository prefs,
+                          DeductionEntryRepository deductions) {
         this.users = users;
         this.profiles = profiles;
         this.years = years;
         this.categories = categories;
         this.entries = entries;
         this.prefs = prefs;
+        this.deductions = deductions;
     }
 
     // ---------- ประเภทเงินได้ ----------
@@ -70,7 +76,7 @@ public class TaxDataService {
 
     @Transactional
     public Dtos.Profile saveProfile(UUID uid, ProfileInput in) {
-         profiles.upsert(uid, in.nick(), in.marital(), in.kids(), in.kids2(), in.parents(), in.spParents(), in.disabled(),
+        profiles.upsert(uid, in.nick(), in.marital(), in.kids(), in.kids2(), in.parents(), in.spParents(), in.disabled(),
             in.ss(), in.life(), in.health(), in.phealth(), in.retire(), in.home(), in.donate(),
             in.rentType(), in.profType(), in.bizRate(), in.excl4(), in.project(), in.sample());
         return Dtos.Profile.of(profiles.findById(uid).orElseThrow());
@@ -168,6 +174,44 @@ public class TaxDataService {
         entries.delete(entries.findOwned(id, uid).orElseThrow(() -> new NotFound("entry")));
     }
 
+    // ---------- ค่าลดหย่อนกลุ่มประกันและดอกเบี้ย (รายปี) ----------
+
+    static final int MAX_DEDUCTIONS_PER_USER = 500;
+
+    @Transactional(readOnly = true)
+    public List<Dtos.Deduction> deductions(UUID uid) {
+        return deductions.findAllByUser(uid).stream().map(Dtos.Deduction::of).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Dtos.Deduction deduction(UUID uid, long id) {
+        return Dtos.Deduction.of(deductions.findOwned(id, uid).orElseThrow(() -> new NotFound("deduction")));
+    }
+
+    @Transactional
+    public Dtos.Deduction createDeduction(UUID uid, DeductionInput in) {
+        if (deductions.countByUser(uid) >= MAX_DEDUCTIONS_PER_USER) throw new Conflict("too_many_deductions");
+        TaxYear y = findOrCreateYear(uid, in.yearBe());
+        return Dtos.Deduction.of(deductions.save(new DeductionEntry(y, in.kind(), in.name(), in.amount(), in.pct())));
+    }
+
+    /** แก้เฉพาะฟิลด์ที่ส่งมา */
+    @Transactional
+    public Dtos.Deduction updateDeduction(UUID uid, long id, DeductionInput in) {
+        DeductionEntry d = deductions.findOwned(id, uid).orElseThrow(() -> new NotFound("deduction"));
+        if (in.yearBe() != null && in.yearBe() != d.getTaxYear().getYearBe()) d.setTaxYear(findOrCreateYear(uid, in.yearBe()));
+        if (in.kind() != null) d.setKind(in.kind());
+        if (in.name() != null) d.setName(in.name());
+        if (in.amount() != null) d.setAmount(in.amount());
+        if (in.pct() != null) d.setWithheldPct(in.pct());
+        return Dtos.Deduction.of(deductions.save(d));
+    }
+
+    @Transactional
+    public void deleteDeduction(UUID uid, long id) {
+        deductions.delete(deductions.findOwned(id, uid).orElseThrow(() -> new NotFound("deduction")));
+    }
+
     /** ลบรายการทั้งหมดของปี (หรือเฉพาะเดือน ถ้าส่ง month) โดยไม่ลบตัวปีภาษี คืนจำนวนที่ลบ */
     @Transactional
     public int clearEntries(UUID uid, int yearBe, Integer month) {
@@ -210,6 +254,7 @@ public class TaxDataService {
         for (TaxYear y : years.findAllByUser(uid)) {
             Map<String, Object> ym = new LinkedHashMap<>();
             ym.put("months", new LinkedHashMap<String, Object>());
+            ym.put("ded", new ArrayList<Object>());
             yearMap.put(String.valueOf(y.getYearBe()), ym);
         }
         for (Dtos.Entry e : search(uid, null, null, null, null)) {
@@ -227,6 +272,19 @@ public class TaxDataService {
             item.put("w", e.withheld());
             item.put("t", e.method());
             item.put("n", e.name());
+            list.add(item);
+        }
+        for (DeductionEntry d : deductions.findAllByUser(uid)) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> ym = (Map<String, Object>) yearMap.get(String.valueOf(d.getTaxYear().getYearBe()));
+            @SuppressWarnings("unchecked")
+            List<Object> list = (List<Object>) ym.get("ded");
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", d.getId());
+            item.put("k", d.getKind());
+            item.put("n", d.getName());
+            item.put("i", d.getAmount());
+            item.put("p", d.getWithheldPct());
             list.add(item);
         }
         Map<String, Object> out = new LinkedHashMap<>();

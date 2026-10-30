@@ -66,6 +66,48 @@ class DataValidatorTest {
     }
 
     @Test
+    void deductionCreateAcceptsValidAndDefaultsTheRest() {
+        var d = DataValidator.deduction(m("yearBe", 2569, "kind", "fund", "name", " หุ้น A ", "amount", 20000, "pct", 10), true);
+        assertEquals(2569, d.yearBe());
+        assertEquals("fund", d.kind());
+        assertEquals("หุ้น A", d.name());
+        assertEquals(new BigDecimal("20000.00"), d.amount());
+        assertEquals(new BigDecimal("10.00"), d.pct());
+        var z = DataValidator.deduction(m("yearBe", 2569, "kind", "life", "name", "ประกันชีวิต"), true);
+        assertEquals(new BigDecimal("0.00"), z.amount());
+        assertEquals(new BigDecimal("0.00"), z.pct());
+    }
+
+    @Test
+    void deductionRequiresYearKindAndName() {
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("kind", "life", "name", "x"), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "name", "x"), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "life"), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "life", "name", "   "), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("name", ""), false));
+    }
+
+    @Test
+    void deductionRejectsBadValues() {
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "gold", "name", "x"), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "life", "name", "x", "amount", -1), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "life", "name", "x", "pct", 101), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "life", "name", "x", "pct", -0.5), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 1999, "kind", "life", "name", "x"), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "life", "name", "x", "userId", "u"), true));
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "life", "name", "x".repeat(201)), true));
+    }
+
+    @Test
+    void deductionUpdateIsPartial() {
+        var d = DataValidator.deduction(m("pct", "12.5"), false);
+        assertEquals(new BigDecimal("12.50"), d.pct());
+        assertEquals(null, d.kind());
+        assertEquals(null, d.name());
+        assertEquals(null, d.amount());
+    }
+
+    @Test
     void methodsAllowedForEntries() {
         for (String ok : new String[]{"auto", "manual", "none", "3", "15", ""})
             assertEquals(ok, DataValidator.entry(m("yearBe", 2569, "month", 1, "category", "c1", "method", ok, "name", "x"), true).method());
