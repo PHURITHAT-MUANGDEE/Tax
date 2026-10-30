@@ -524,9 +524,9 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
               </div>
             
               <div class="field"><label for="p-kids">จำนวนบุตรที่เกิดก่อนปี 2561</label><input type="text" inputmode="numeric" id="p-kids" data-p="kids" data-t="i"><span class="hint">คนละ 30,000 บาท อายุไม่เกิน 20 ปี หรือไม่เกิน 25 ปีถ้ากำลังเรียนระดับอุดมศึกษา</span></div>
-              <div class="field"><label for="p-kids2">บุตรคนที่ 2 ขึ้นไปที่เกิดปี 2561 เป็นต้นมา</label><input type="text" inputmode="numeric" id="p-kids2" data-p="kids2" data-t="i"><span class="hint">ได้เพิ่มอีกคนละ 30,000 บาท</span></div>
+              <div class="field"><label for="p-kids2">จำนวนบุตรที่เกิดปี 2561 เป็นต้นมา</label><input type="text" inputmode="numeric" id="p-kids2" data-p="kids2" data-t="i"><span class="hint">คนละ 60,000 บาท (นับแยกจากบุตรที่เกิดก่อนปี 2561 ไม่ต้องนับซ้ำ)</span></div>
               <div class="field"><label for="p-parents">บิดามารดาของตัวเอง (0 ถึง 2 คน)</label><input type="text" inputmode="numeric" id="p-parents" data-p="parents" data-t="i"><span class="hint">คนละ 30,000 บาท อายุ 60 ปีขึ้นไป รายได้ไม่เกิน 30,000 บาทต่อปี</span></div>
-              <div class="field"><label for="p-spParents">บิดามารดาของคู่สมรส (0 ถึง 2 คน)</label><input type="text" inputmode="numeric" id="p-spParents" data-p="spParents" data-t="i"><span class="hint">ใช้สิทธิ์ได้เมื่อสมรสแล้ว เงื่อนไขเดียวกัน</span></div>
+              <div class="field"><label for="p-spParents">บิดามารดาของคู่สมรส (0 ถึง 2 คน)</label><input type="text" inputmode="numeric" id="p-spParents" data-p="spParents" data-t="i"><span class="hint" id="spHint" data-base="ใช้สิทธิ์ได้เมื่อสมรสแล้ว เงื่อนไขเดียวกัน">ใช้สิทธิ์ได้เมื่อสมรสแล้ว เงื่อนไขเดียวกัน</span></div>
               <div class="field wide"><label for="p-disabled">ผู้พิการหรือทุพพลภาพที่เลี้ยงดู (คน)</label><input type="text" inputmode="numeric" id="p-disabled" data-p="disabled" data-t="i"><span class="hint">คนละ 60,000 บาท ต้องมีบัตรประจำตัวคนพิการหรือเอกสารรับรอง</span></div>
             
               <div class="rowstat" data-prof="1" data-s="none" role="status"></div>
@@ -692,7 +692,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
             <tbody>
               <tr><td>ผู้มีเงินได้</td><td class="r"><span class="num">60,000</span></td><td>ได้ทุกคน</td></tr>
               <tr><td>คู่สมรสไม่มีเงินได้</td><td class="r"><span class="num">60,000</span></td><td>ต้องจดทะเบียนสมรส</td></tr>
-              <tr><td>บุตร</td><td class="r"><span class="num">30,000 / คน</span></td><td>คนที่ 2 ขึ้นไปที่เกิดปี 2561 เป็นต้นมา เพิ่มอีก 30,000</td></tr>
+              <tr><td>บุตร</td><td class="r"><span class="num">30,000 / คน</span></td><td>บุตรที่เกิดปี 2561 เป็นต้นมา คนละ 60,000 (นับแยกกัน)</td></tr>
               <tr><td>บิดามารดา</td><td class="r"><span class="num">30,000 / คน</span></td><td>ของตัวเองและของคู่สมรส รวมไม่เกิน 4 คน</td></tr>
               <tr><td>ผู้พิการหรือทุพพลภาพ</td><td class="r"><span class="num">60,000 / คน</span></td><td>ต้องมีเอกสารรับรอง</td></tr>
               <tr><td>ประกันสังคม</td><td class="r"><span class="num">9,000</span></td><td>ตามจริง</td></tr>
@@ -1277,15 +1277,22 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   function dedList() { var Y = state.years[state.year]; return Y && Array.isArray(Y.ded) ? Y.ded : []; }
   function dedSums() { var D = { ss: 0, life: 0, health: 0, phealth: 0, home: 0, fund: 0 }; dedList().forEach(function (e) { if (e.k in D) D[e.k] += e.i || 0; }); return D; }
   function dedCredit() { var t = 0; dedList().forEach(function (e) { t += (e.i || 0) * clamp(e.p || 0, 0, 100) / 100; }); return t; }
+  // คู่สมรสมีเงินได้ และเราใช้สิทธิ์บิดามารดาของตัวเองครบ 2 คนแล้ว: ไม่ให้ใช้สิทธิ์บิดามารดาของคู่สมรสซ้ำ
+  function spLocked(P) { return P.marital === "married_inc" && Math.floor(num(P.parents)) >= 2; }
+  function updateSpParents() {
+    var el = $("p-spParents"), h = $("spHint"), lock = spLocked(state.profile);
+    el.disabled = lock;
+    h.textContent = lock ? "กรอกไม่ได้ เพราะคู่สมรสมีเงินได้ และคุณใช้สิทธิ์ลดหย่อนบิดามารดาของตัวเองครบ 2 คนแล้ว ไม่ซ้ำกับของคู่สมรส (ถ้าลดจำนวนบิดามารดาของตัวเอง ช่องนี้จะกรอกได้อีกครั้ง)" : h.getAttribute("data-base");
+  }
   function allowanceItems(P, gross) {
-    var kids = Math.floor(num(P.kids)), kids2 = Math.min(Math.floor(num(P.kids2)), kids);
+    var kids = Math.floor(num(P.kids)), kids2 = Math.floor(num(P.kids2));
     var items = [];
     function add(label, amt) { if (amt > 0) items.push([label, amt]); }
     add("ลดหย่อนส่วนตัว", gross > 0 ? 60000 : 0);
     add("คู่สมรสไม่มีเงินได้", P.marital === "married_noinc" ? 60000 : 0);
-    add("บุตร " + kids + " คน", kids * 30000);
-    add("บุตรคนที่ 2 เป็นต้นไป เกิดปี 2561+", kids2 * 30000);
-    add("บิดามารดา", (Math.min(Math.floor(num(P.parents)), 2) + (P.marital === "single" ? 0 : Math.min(Math.floor(num(P.spParents)), 2))) * 30000);
+    add("บุตรที่เกิดก่อนปี 2561 " + kids + " คน", kids * 30000);
+    add("บุตรที่เกิดปี 2561 เป็นต้นมา " + kids2 + " คน", kids2 * 60000);
+    add("บิดามารดา", (Math.min(Math.floor(num(P.parents)), 2) + (P.marital === "single" || spLocked(P) ? 0 : Math.min(Math.floor(num(P.spParents)), 2))) * 30000);
     add("ผู้พิการที่เลี้ยงดู", Math.floor(num(P.disabled)) * 60000);
     var D = dedSums();
     add("ประกันสังคม", Math.min(D.ss, 9000));
@@ -1651,6 +1658,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     });
   }
   function updateDerived() {
+    updateSpParents();
     var C = compute();
     renderSummary(C); renderAllow(C); renderRulesMine(C); renderMatrix(C); updateMonthMeta(); fillYearSel(); renderLog();
     Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (ch) {
