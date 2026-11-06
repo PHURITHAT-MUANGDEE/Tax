@@ -34,7 +34,7 @@ public final class DataValidator {
                                BigDecimal home, BigDecimal donate, BigDecimal rentType, BigDecimal profType,
                                BigDecimal bizRate, boolean excl4, boolean project, boolean sample) {}
 
-    public static final Set<String> DEDUCTION_KINDS = Set.of("ss", "life", "health", "phealth", "home", "fund");
+    public static final Set<String> DEDUCTION_KINDS = Set.of("ss33", "ss39", "ss40", "life", "health", "phealth", "slife", "home", "fund");
     private static final Set<String> DEDUCTION_KEYS = Set.of("yearBe", "kind", "name", "amount", "pct");
     private static final Set<String> ENTRY_KEYS = Set.of("yearBe", "month", "category", "amount", "withheld", "method", "name");
     private static final Set<String> PROFILE_KEYS = Set.of("nick", "marital", "kids", "kids2", "parents", "spParents", "disabled",

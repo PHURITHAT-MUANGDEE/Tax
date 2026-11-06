@@ -79,6 +79,13 @@ class DataValidatorTest {
     }
 
     @Test
+    void deductionAcceptsInsuranceKindsAndRejectsOldSs() {
+        for (String k : new String[]{"ss33", "ss39", "ss40", "life", "health", "phealth", "slife", "home", "fund"})
+            DataValidator.deduction(m("yearBe", 2569, "kind", k, "name", "x"), true);
+        assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "kind", "ss", "name", "x"), true));
+    }
+
+    @Test
     void deductionRequiresYearKindAndName() {
         assertThrows(Invalid.class, () -> DataValidator.deduction(m("kind", "life", "name", "x"), true));
         assertThrows(Invalid.class, () -> DataValidator.deduction(m("yearBe", 2569, "name", "x"), true));
