@@ -377,6 +377,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       <div class="navlist">
         <a class="navitem" href="#summary" data-nav="summary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="long">รายได้ที่หักภาษีแล้ว</span><span class="short">สรุป</span></a>
         <a class="navitem" href="#monthly" data-nav="monthly"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span class="long">บันทึกรายได้รายเดือน</span><span class="short">รายเดือน</span></a>
+        <a class="navitem" href="#report" data-nav="report"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg><span class="long">ตารางบันทึกรายได้</span><span class="short">ตาราง</span></a>
         <a class="navitem" href="#search" data-nav="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><span class="long">ค้นหารายการรายได้</span><span class="short">ค้นหา</span></a>
         <a class="navitem" href="#profile" data-nav="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><span class="long">ค่าลดหย่อน</span><span class="short">ลดหย่อน</span></a>
         <a class="navitem" href="#notify" data-nav="notify"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></svg><span class="long">ตั้งค่าแจ้งเตือน</span><span class="short">แจ้งเตือน</span></a>
@@ -472,6 +473,23 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
           <div class="seg2" role="group" aria-label="เลือกข้อมูลที่แสดง"><button type="button" id="mxInc" aria-pressed="true">รายได้</button><button type="button" id="mxWh" aria-pressed="false">ภาษีที่ถูกหัก</button></div>
         </div>
         <div class="tablewrap"><table class="mtable" id="matrix"></table></div>
+      </div>
+    </section>
+
+    <!-- ตารางบันทึกรายได้ -->
+    <section class="page" id="page-report" data-page="report" hidden>
+      <div class="phead">
+        <div class="eyebrow">รายงาน</div>
+        <h1>ตารางบันทึกรายได้</h1>
+        <p>ตารางรายได้และภาษีที่ถูกหัก ณ ที่จ่ายของทุกเดือน พร้อมสรุปรายได้ทั้งหมดและรายได้สุทธิ ดาวน์โหลดเป็น PDF ได้</p>
+      </div>
+      <div class="stack">
+        <div class="sheet" id="reportSheet">
+          <div class="field"><label for="rpYear">ปีภาษี</label><select id="rpYear"></select></div>
+          <div class="btns"><button type="button" class="btn primary" id="rpBtn">ดาวน์โหลดรายงาน (PDF)</button></div>
+          <p class="hint" id="rpMsg" role="status">เมื่อกดปุ่ม หน้าต่างพิมพ์จะเปิดขึ้น ให้เลือกปลายทางเป็น "บันทึกเป็น PDF" แล้วกดบันทึก</p>
+        </div>
+        <div class="sheet rpwrap"><div class="rp" id="rpView"></div></div>
       </div>
     </section>
 
@@ -1232,6 +1250,88 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     document.body.appendChild(a); a.click(); a.remove();
     $("acct-msg").textContent = "ดาวน์โหลดไฟล์ข้อมูลของคุณแล้ว";
   });
+  /* ---------- รายงานรายได้และภาษีรายเดือน (พิมพ์เป็น PDF) ---------- */
+  var RGROUPS = [
+    { cs: ["c1"], code: "40(1)", desc: "เงินเดือน / ค่าจ้างประจำ" },
+    { cs: ["c2"], code: "40(2)", desc: "ค่าธรรมเนียม / ค่านายหน้า / ฟรีแลนซ์" },
+    { cs: ["c3"], code: "40(3)", desc: "ค่าลิขสิทธิ์ / ทรัพย์สินทางปัญญา" },
+    { cs: ["c4", "c5", "c6", "c7"], code: "40(4)-(7)", desc: "ดอกเบี้ย / เงินปันผล / ค่าเช่า ฯลฯ" },
+    { cs: ["c8"], code: "40(8)", desc: "เงินได้อื่นๆ (การค้า ธุรกิจ พาณิชย์)" }
+  ];
+  var fmt2 = new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function m2(x) { return Math.abs(x) < 0.005 ? "-" : fmt2.format(x); }
+  var TH_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  var RPCSS = ".rp{font-size:10.5pt;color:#1b2430;background:#fff}.rp h1{font-size:15pt;margin:0 0 10px;color:#1f4e79}.rp .meta{display:grid;grid-template-columns:200px 1fr;gap:6px 12px;margin:0 0 14px;font-size:10pt}.rp .meta b{font-weight:500}" +
+    ".rp table{width:100%;border-collapse:collapse}.rp th{background:#1f4e79;color:#fff;font-weight:500;padding:8px 8px;text-align:left;font-size:10pt}.rp th.r,.rp td.r{text-align:right;white-space:nowrap}" +
+    ".rp thead{display:table-header-group}.rp tr{page-break-inside:avoid;break-inside:avoid}.rp td{padding:5px 8px;border-bottom:1px solid #e3e7ec;vertical-align:top}.rp td.mo{font-weight:600;width:70px}.rp td.ct{width:84px;text-align:center;white-space:nowrap}" +
+    ".rp tr.first td{border-top:1px solid #b9c3ce}.rp tr.sub td{background:#f2f5f8;font-weight:500}.rp tr.tot td{background:#1f4e79;color:#fff;font-weight:600}.rp .nm{font-size:8.5pt;color:#5b6675}" +
+    ".rp .sum{margin-top:18px;page-break-inside:avoid;break-inside:avoid}.rp .sum h2{font-size:12pt;margin:0 0 6px;color:#1f4e79}.rp .sum td{padding:6px 8px}.rp .sum tr.key td{font-weight:600;background:#e8f0f8;font-size:11pt}.rp .note{margin-top:12px;font-size:8.5pt;color:#5b6675}";
+  function reportBody(y) {
+    return withYear(y, function () {
+      var C = compute(), ce = y - 543, rows = "", tI = 0, tW = 0, m, P = state.profile;
+      for (m = 1; m <= 12; m++) {
+        var mi = 0, mw = 0;
+        RGROUPS.forEach(function (g, gi) {
+          var a = 0, w = 0, names = [];
+          g.cs.forEach(function (c) { var r = mc(m, c); a += r[0]; w += r[1]; ents(m, c).forEach(function (e) { if (keepEnt(e) && e.n && String(e.n).trim()) names.push(String(e.n).trim()); }); });
+          mi += a; mw += w;
+          rows += "<tr class='" + (gi === 0 ? "first" : "") + "'><td class='mo'>" + (gi === 0 ? MONTHS[m - 1] : "") + "</td><td class='ct'>" + g.code + "</td><td>" + esc(g.desc) +
+            (names.length ? "<div class='nm'>" + esc(names.join(", ")) + "</div>" : "") + "</td><td class='r'>" + m2(a) + "</td><td class='r'>" + m2(w) + "</td></tr>";
+        });
+        tI += mi; tW += mw;
+        rows += "<tr class='sub'><td></td><td></td><td>รวมเดือน" + MONTHS[m - 1] + "</td><td class='r'>" + m2(mi) + "</td><td class='r'>" + m2(mw) + "</td></tr>";
+      }
+      rows += "<tr class='tot'><td colspan='3'>รวมทั้งปี</td><td class='r'>" + m2(tI) + "</td><td class='r'>" + m2(tW) + "</td></tr>";
+      var ex4 = C.recInc - C.gross, sum = "";
+      function line(label, val, cls, sign) { sum += "<tr class='" + (cls || "") + "'><td>" + label + "</td><td class='r'>" + (Math.abs(val) < 0.005 ? "" : sign || "") + m2(val) + "</td></tr>"; }
+      line("รายได้ทั้งหมด (Total Income)", C.recInc, "key");
+      if (ex4 > 0.005) line("หัก เงินได้ 40(4) ที่เลือกไม่นำมารวมคำนวณ", ex4, "", "−");
+      line("หัก ค่าใช้จ่าย (หักเหมาตามประเภทเงินได้)", C.expense, "", "−");
+      line("หัก ค่าลดหย่อน", C.allow, "", "−");
+      line("หัก เงินบริจาค", C.donation, "", "−");
+      line("รายได้สุทธิ (Net Income) ที่ใช้คำนวณภาษี", C.net, "key");
+      line("ภาษีที่คำนวณได้" + (C.minUsed ? " (ภาษีขั้นต่ำ 0.5%)" : ""), C.tax);
+      line("ภาษีที่ถูกหัก ณ ที่จ่ายแล้ว", C.credit, "", "−");
+      line(C.diff >= 0 ? "ภาษีที่ต้องชำระเพิ่ม" : "ภาษีที่ได้รับคืน", Math.abs(C.diff), "key");
+      var name = P.nick && String(P.nick).trim() ? esc(String(P.nick).trim()) : "-----";
+      var today = new Date(), made = today.getDate() + " " + TH_SHORT[today.getMonth()] + " " + (today.getFullYear() + 543);
+      return "<h1>ตารางบันทึกรายได้และภาษีรายเดือน (Monthly Income &amp; Tax Log)</h1>" +
+        "<div class='meta'><div>ชื่อ-นามสกุล ผู้มีเงินได้:</div><b>" + name + "</b><div>ปีภาษี / ช่วงเวลา:</div><b>ปี " + y + " · 1 ม.ค. " + ce + " – 31 ธ.ค. " + ce + "</b><div>ยื่นภาษีภายในวันที่:</div><b>31 มี.ค. " + (ce + 1) + "</b></div>" +
+        "<table><thead><tr><th>เดือน</th><th style='text-align:center'>ประเภทเงินได้</th><th>รายการ / แหล่งที่มาของรายได้</th><th class='r'>จำนวนเงิน (บาท)</th><th class='r'>ภาษีหัก ณ ที่จ่าย (บาท)</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+        "<div class='sum'><h2>สรุปรายได้และภาษีปี " + y + "</h2><table><tbody>" + sum + "</tbody></table></div>" +
+        "<p class='note'>จัดทำโดยสมุดภาษี เมื่อ " + made + " · ตัวเลขนับเฉพาะที่บันทึกไว้จริง ไม่รวมประมาณการเงินเดือนเดือนที่เหลือ เป็นการประมาณเพื่อการวางแผน ไม่ใช่คำแนะนำทางภาษี</p>";
+    });
+  }
+  function reportHtml(y) {
+    return "<!doctype html><html lang='th'><head><meta charset='utf-8'><title>สมุดภาษี-รายได้และภาษีรายเดือน-" + y + "</title>" +
+      "<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap'>" +
+      "<style>@page{size:A4;margin:14mm 12mm}*{box-sizing:border-box}body{margin:0;font-family:'IBM Plex Sans Thai','Sarabun','Noto Sans Thai',Tahoma,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}" + RPCSS + "</style></head><body><div class='rp'>" + reportBody(y) + "</div></body></html>";
+  }
+  function renderReport() {
+    if (!$("rpStyle")) { var st = document.createElement("style"); st.id = "rpStyle"; st.textContent = RPCSS + ".rpwrap{overflow-x:auto;padding:0}.rpwrap .rp{min-width:620px;padding:18px;font-family:inherit}"; document.head.appendChild(st); }
+    fillReportYears();
+    $("rpView").innerHTML = reportBody(parseInt($("rpYear").value, 10));
+  }
+  $("rpYear").addEventListener("change", renderReport);
+  $("rpBtn").addEventListener("click", function () {
+    var y = parseInt($("rpYear").value, 10), html = reportHtml(y);
+    var old = document.querySelector("iframe.rpframe"); if (old) old.remove();
+    var f = document.createElement("iframe"); f.className = "rpframe"; f.setAttribute("aria-hidden", "true"); f.tabIndex = -1;
+    f.style.cssText = "position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none";
+    document.body.appendChild(f);
+    var d = f.contentWindow.document; d.open(); d.write(html); d.close();
+    var title = document.title, fname = "สมุดภาษี-รายได้และภาษีรายเดือน-" + y;
+    $("rpMsg").textContent = "กำลังเปิดหน้าต่างพิมพ์ ให้เลือก \"บันทึกเป็น PDF\" แล้วกดบันทึก";
+    var go = function () {
+      try {
+        document.title = fname;
+        f.contentWindow.focus(); f.contentWindow.print();
+      } catch (e) { $("rpMsg").textContent = "เปิดหน้าต่างพิมพ์ไม่สำเร็จ ลองใหม่อีกครั้ง หรือใช้เบราว์เซอร์รุ่นล่าสุด"; }
+      setTimeout(function () { document.title = title; }, 1000);
+    };
+    var ready = d.fonts && d.fonts.ready ? d.fonts.ready : Promise.resolve();
+    Promise.race([ready, new Promise(function (r) { setTimeout(r, 2500); })]).then(function () { setTimeout(go, 150); });
+  });
   var delTimer = null;
   $("deleteBtn").addEventListener("click", async function () {
     var b = this;
@@ -1704,10 +1804,18 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     var last = 0; for (var m = 1; m <= 12; m++) { if (CATS.some(function (c) { var r = mc(m, c.k); return r[0] > 0 || r[1] > 0; })) last = m; }
     return last || (state.year === NOW_YEAR ? new Date().getMonth() + 1 : 1);
   }
+  function fillReportYears() {
+    var sel = $("rpYear"), keep = sel.value, ys = Object.keys(state.years).map(Number);
+    if (ys.indexOf(state.year) < 0) ys.push(state.year);
+    ys.sort(function (a, b) { return b - a; });
+    sel.innerHTML = ys.map(function (y) { return "<option value='" + y + "'>" + y + (yearHasData(y) ? " · มีข้อมูล" : "") + "</option>"; }).join("");
+    sel.value = keep && ys.indexOf(+keep) >= 0 ? keep : String(state.year);
+  }
   function fillYearSel() {
     var have = dataYears(), all = Object.keys(state.years).map(Number), lo = Math.min.apply(null, [NOW_YEAR - 7, state.year].concat(all)), hi = Math.max.apply(null, [NOW_YEAR + 1, state.year].concat(all)), h = "";
     for (var y = hi; y >= lo; y--) h += "<option value='" + y + "'>" + y + (y === NOW_YEAR ? " (ปีปัจจุบัน)" : "") + (have.indexOf(y) >= 0 ? " · มีข้อมูล" : "") + "</option>";
     $("yearSel").innerHTML = h; $("yearSel").value = String(state.year);
+    fillReportYears();
   }
   function yearLabels() {
     var y = state.year, d = new Date(), left = Math.max(0, Math.ceil((new Date(d.getFullYear(), 11, 31) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000));
@@ -1951,7 +2059,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   });
 
   /* ---------- routing ---------- */
-  var PAGES = ["summary", "monthly", "search", "profile", "notify", "rules", "guide", "settings"];
+  var PAGES = ["summary", "monthly", "report", "search", "profile", "notify", "rules", "guide", "settings"];
   function show() {
     var h = (location.hash || "").replace("#", "");
     if (PAGES.indexOf(h) < 0) h = "summary";
@@ -1960,6 +2068,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       if (a.getAttribute("data-nav") === h) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     if (h === "search" && loaded) prepSearch();
+    if (h === "report" && loaded) renderReport();
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", show);
