@@ -33,8 +33,7 @@ public final class DataValidator {
     public record ExpenseInput(Integer yearBe, Integer month, String kind, String category, String name, BigDecimal amount, String note) {}
 
     public record ProfileInput(String nick, String marital, int kids, int kids2, int parents, int spParents, int disabled,
-                               BigDecimal ss, BigDecimal life, BigDecimal health, BigDecimal phealth, BigDecimal retire,
-                               BigDecimal home, BigDecimal donate, BigDecimal rentType, BigDecimal profType,
+                               BigDecimal donate, BigDecimal rentType, BigDecimal profType,
                                BigDecimal bizRate, boolean excl4, boolean project, boolean sample) {}
 
     public static final Set<String> DEDUCTION_KINDS = Set.of("ss33", "ss39", "ss40", "life", "health", "phealth", "slife", "home", "fund");
@@ -43,7 +42,7 @@ public final class DataValidator {
     private static final Set<String> DEDUCTION_KEYS = Set.of("yearBe", "kind", "name", "amount", "pct");
     private static final Set<String> ENTRY_KEYS = Set.of("yearBe", "month", "category", "amount", "withheld", "method", "name");
     private static final Set<String> PROFILE_KEYS = Set.of("nick", "marital", "kids", "kids2", "parents", "spParents", "disabled",
-        "ss", "life", "health", "phealth", "retire", "home", "donate", "rentType", "profType", "bizRate", "excl4", "project", "sample");
+        "donate", "rentType", "profType", "bizRate", "excl4", "project", "sample");
     private static final Set<String> MARITAL = Set.of("single", "married_noinc", "married_inc");
 
     // ---------- ค่าเดี่ยว ----------
@@ -204,8 +203,7 @@ public final class DataValidator {
         BigDecimal hundred = new BigDecimal("100");
         return new ProfileInput(nick, marital,
             count(body, "kids", 50), count(body, "kids2", 50), count(body, "parents", 2), count(body, "spParents", 2), count(body, "disabled", 50),
-            amount(body, "ss"), amount(body, "life"), amount(body, "health"), amount(body, "phealth"), amount(body, "retire"),
-            amount(body, "home"), amount(body, "donate"),
+            amount(body, "donate"),
             percent(body, "rentType", 30, hundred), percent(body, "profType", 30, hundred), percent(body, "bizRate", 60, hundred),
             flag(body, "excl4", false), flag(body, "project", true), flag(body, "sample", false));
     }

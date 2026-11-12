@@ -16,12 +16,12 @@ import java.time.Instant;
 
 /**
  * รายการค่าลดหย่อนกลุ่ม "ประกันและดอกเบี้ย (รายปี)" ของปีภาษีหนึ่งปี ผู้ใช้เพิ่มได้หลายรายการ
- * kind: ss ประกันสังคม, life ประกันชีวิต, health ประกันสุขภาพ, phealth ประกันสุขภาพบิดามารดา,
+ * kind = allowance_type.code: ss33/ss39/ss40 ประกันสังคม, life ประกันชีวิต, health ประกันสุขภาพ, phealth ประกันสุขภาพบิดามารดา,
  *       home ดอกเบี้ยเงินกู้ซื้อบ้าน, fund หุ้นและกองทุน
  * withheldPct = % ภาษีที่ถูกหักที่ผู้ใช้กรอกเอง (ยอด x % นำไปรวมเป็นเครดิตภาษี)
  */
 @Entity
-@Table(name = "deduction_entry")
+@Table(name = "tax_allowance_entry")
 public class DeductionEntry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +31,7 @@ public class DeductionEntry {
     @JoinColumn(name = "tax_year_id", nullable = false)
     private TaxYear taxYear;
 
-    @Column(nullable = false) private String kind;
+    @Column(name = "allowance_type_code", nullable = false) private String kind;
     @Column(nullable = false) private String name;
     @Column(nullable = false) private BigDecimal amount = BigDecimal.ZERO;
     @Column(name = "withheld_pct", nullable = false) private BigDecimal withheldPct = BigDecimal.ZERO;

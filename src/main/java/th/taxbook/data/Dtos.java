@@ -16,19 +16,18 @@ public final class Dtos {
     }
 
     public record Profile(String nick, String marital, int kids, int kids2, int parents, int spParents, int disabled,
-                          BigDecimal ss, BigDecimal life, BigDecimal health, BigDecimal phealth, BigDecimal retire,
-                          BigDecimal home, BigDecimal donate, BigDecimal rentType, BigDecimal profType, BigDecimal bizRate,
+                          BigDecimal donate, BigDecimal rentType, BigDecimal profType, BigDecimal bizRate,
                           boolean excl4, boolean project, boolean sample) {
         static Profile of(TaxProfile p) {
             return new Profile(p.getNick(), p.getMarital(), p.getKids(), p.getKids2(), p.getParents(), p.getSpParents(), p.getDisabled(),
-                p.getSs(), p.getLife(), p.getHealth(), p.getPhealth(), p.getRetire(), p.getHome(), p.getDonate(),
+                p.getDonate(),
                 p.getRentType(), p.getProfType(), p.getBizRate(), p.isExcl4(), p.isProjectRemaining(), p.isSample());
         }
 
         /** ผู้ใช้ที่ยังไม่เคยบันทึกโปรไฟล์ */
         static Profile defaults() {
             BigDecimal z = new BigDecimal("0.00");
-            return new Profile("", "single", 0, 0, 0, 0, 0, z, z, z, z, z, z, z,
+            return new Profile("", "single", 0, 0, 0, 0, 0, z,
                 new BigDecimal("30.00"), new BigDecimal("30.00"), new BigDecimal("60.00"), false, true, false);
         }
     }

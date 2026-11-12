@@ -33,7 +33,7 @@ public class AttachmentService {
         return switch (parent == null ? "" : parent) {
             case "income" -> "income_entry_id";
             case "expense" -> "expense_entry_id";
-            case "deduction" -> "deduction_entry_id";
+            case "deduction" -> "tax_allowance_entry_id";
             default -> throw new Invalid("invalid_parent");
         };
     }
@@ -42,7 +42,7 @@ public class AttachmentService {
         String sql = switch (parent) {
             case "income" -> "select count(*) from income_entry e join tax_year y on y.id = e.tax_year_id where e.id = ? and y.user_id = ?";
             case "expense" -> "select count(*) from expense_entry e join tax_year y on y.id = e.tax_year_id where e.id = ? and y.user_id = ?";
-            default -> "select count(*) from deduction_entry e join tax_year y on y.id = e.tax_year_id where e.id = ? and y.user_id = ?";
+            default -> "select count(*) from tax_allowance_entry e join tax_year y on y.id = e.tax_year_id where e.id = ? and y.user_id = ?";
         };
         Integer n = jdbc.queryForObject(sql, Integer.class, id, uid);
         return n != null && n > 0;
@@ -78,8 +78,8 @@ public class AttachmentService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> counts(UUID uid) {
         List<Map<String, Object>> out = new ArrayList<>();
-        jdbc.query("select income_entry_id i, expense_entry_id e, deduction_entry_id d, count(*) n from document_attachment where user_id = ? "
-                + "group by income_entry_id, expense_entry_id, deduction_entry_id", rs -> {
+        jdbc.query("select income_entry_id i, expense_entry_id e, tax_allowance_entry_id d, count(*) n from document_attachment where user_id = ? "
+                + "group by income_entry_id, expense_entry_id, tax_allowance_entry_id", rs -> {
             long i = rs.getLong("i"); boolean iNull = rs.wasNull();
             long e = rs.getLong("e"); boolean eNull = rs.wasNull();
             long d = rs.getLong("d");

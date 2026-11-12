@@ -33,12 +33,6 @@ public class TaxProfile {
     @Column(nullable = false) private Integer parents = 0;
     @Column(name = "sp_parents", nullable = false) private Integer spParents = 0;
     @Column(nullable = false) private Integer disabled = 0;
-    @Column(nullable = false) private BigDecimal ss = BigDecimal.ZERO;
-    @Column(nullable = false) private BigDecimal life = BigDecimal.ZERO;
-    @Column(nullable = false) private BigDecimal health = BigDecimal.ZERO;
-    @Column(nullable = false) private BigDecimal phealth = BigDecimal.ZERO;
-    @Column(nullable = false) private BigDecimal retire = BigDecimal.ZERO;
-    @Column(nullable = false) private BigDecimal home = BigDecimal.ZERO;
     @Column(nullable = false) private BigDecimal donate = BigDecimal.ZERO;
     @Column(name = "rent_type", nullable = false) private BigDecimal rentType = new BigDecimal("30.00");
     @Column(name = "prof_type", nullable = false) private BigDecimal profType = new BigDecimal("30.00");
@@ -59,8 +53,7 @@ public class TaxProfile {
     public void apply(ProfileInput in) {
         nick = in.nick(); marital = in.marital();
         kids = in.kids(); kids2 = in.kids2(); parents = in.parents(); spParents = in.spParents(); disabled = in.disabled();
-        ss = in.ss(); life = in.life(); health = in.health(); phealth = in.phealth(); retire = in.retire();
-        home = in.home(); donate = in.donate();
+        donate = in.donate();
         rentType = in.rentType(); profType = in.profType(); bizRate = in.bizRate();
         excl4 = in.excl4(); projectRemaining = in.project(); sample = in.sample();
     }
@@ -77,12 +70,6 @@ public class TaxProfile {
     public int getParents() { return parents; }
     public int getSpParents() { return spParents; }
     public int getDisabled() { return disabled; }
-    public BigDecimal getSs() { return ss; }
-    public BigDecimal getLife() { return life; }
-    public BigDecimal getHealth() { return health; }
-    public BigDecimal getPhealth() { return phealth; }
-    public BigDecimal getRetire() { return retire; }
-    public BigDecimal getHome() { return home; }
     public BigDecimal getDonate() { return donate; }
     public BigDecimal getRentType() { return rentType; }
     public BigDecimal getProfType() { return profType; }

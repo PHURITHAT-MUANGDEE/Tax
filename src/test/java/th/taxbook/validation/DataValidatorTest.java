@@ -129,9 +129,9 @@ class DataValidatorTest {
         assertEquals(new BigDecimal("60.00"), p.bizRate());
         assertEquals(new BigDecimal("30.00"), p.rentType());
         assertEquals(true, p.project());
-        var q = DataValidator.profile(m("nick", "ต้น", "marital", "married_noinc", "kids", 2, "parents", 2, "ss", 9000, "excl4", true));
+        var q = DataValidator.profile(m("nick", "ต้น", "marital", "married_noinc", "kids", 2, "parents", 2, "donate", 9000, "excl4", true));
         assertEquals(2, q.kids());
-        assertEquals(new BigDecimal("9000.00"), q.ss());
+        assertEquals(new BigDecimal("9000.00"), q.donate());
         assertEquals(true, q.excl4());
     }
 

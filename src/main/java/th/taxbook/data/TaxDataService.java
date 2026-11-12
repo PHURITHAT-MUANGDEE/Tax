@@ -82,7 +82,7 @@ public class TaxDataService {
     @Transactional
     public Dtos.Profile saveProfile(UUID uid, ProfileInput in) {
         profiles.upsert(uid, in.nick(), in.marital(), in.kids(), in.kids2(), in.parents(), in.spParents(), in.disabled(),
-            in.ss(), in.life(), in.health(), in.phealth(), in.retire(), in.home(), in.donate(),
+            in.donate(),
             in.rentType(), in.profType(), in.bizRate(), in.excl4(), in.project(), in.sample());
         return Dtos.Profile.of(profiles.findById(uid).orElseThrow());
     }
