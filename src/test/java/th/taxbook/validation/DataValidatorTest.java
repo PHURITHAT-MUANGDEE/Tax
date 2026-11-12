@@ -145,4 +145,38 @@ class DataValidatorTest {
         assertThrows(Invalid.class, () -> DataValidator.profile(m("isAdmin", true)));
         assertThrows(Invalid.class, () -> DataValidator.profile(m("nick", "x".repeat(81))));
     }
+
+    @Test
+    void expenseCreateAndRules() {
+        var e = DataValidator.expense(m("yearBe", 2569, "month", 3, "kind", "income_cost", "category", "c2", "name", " ค่าเดินทาง ", "amount", 500), true);
+        assertEquals("ค่าเดินทาง", e.name());
+        assertEquals("c2", e.category());
+        assertEquals(new BigDecimal("500.00"), e.amount());
+        assertEquals("", e.note());
+        var p = DataValidator.expense(m("yearBe", 2569, "month", 1, "kind", "personal", "name", "กาแฟ"), true);
+        assertEquals(new BigDecimal("0.00"), p.amount());
+        assertEquals(null, p.category());
+    }
+
+    @Test
+    void expenseRejectsBad() {
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("yearBe", 2569, "month", 1, "kind", "personal", "name", "  "), true));
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("yearBe", 2569, "month", 1, "kind", "personal"), true));
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("yearBe", 2569, "month", 13, "kind", "personal", "name", "x"), true));
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("yearBe", 2569, "month", 1, "kind", "gift", "name", "x"), true));
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("yearBe", 2569, "month", 1, "kind", "personal", "category", "c1", "name", "x"), true));
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("yearBe", 2569, "month", 1, "kind", "income_cost", "category", "c9", "name", "x"), true));
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("yearBe", 2569, "month", 1, "kind", "personal", "name", "x", "amount", -1), true));
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("yearBe", 2569, "month", 1, "kind", "personal", "name", "x", "userId", "1"), true));
+        assertThrows(Invalid.class, () -> DataValidator.expense(m("note", "x".repeat(501)), false));
+    }
+
+    @Test
+    void expenseUpdateKeepsUnsentFields() {
+        var u = DataValidator.expense(m("amount", 99), false);
+        assertEquals(null, u.name());
+        assertEquals(null, u.kind());
+        assertEquals(new BigDecimal("99.00"), u.amount());
+        assertEquals("", DataValidator.expense(m("category", ""), false).category());
+    }
 }

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import th.taxbook.data.entity.DeductionEntry;
+import th.taxbook.data.entity.ExpenseEntry;
 import th.taxbook.data.entity.IncomeCategory;
 import th.taxbook.data.entity.IncomeEntry;
 import th.taxbook.data.entity.TaxProfile;
@@ -18,6 +19,7 @@ import th.taxbook.data.entity.TaxYear;
 import th.taxbook.data.entity.User;
 import th.taxbook.data.entity.WithholdPref;
 import th.taxbook.data.repo.DeductionEntryRepository;
+import th.taxbook.data.repo.ExpenseEntryRepository;
 import th.taxbook.data.repo.IncomeCategoryRepository;
 import th.taxbook.data.repo.IncomeEntryRepository;
 import th.taxbook.data.repo.TaxProfileRepository;
@@ -27,6 +29,7 @@ import th.taxbook.data.repo.WithholdPrefRepository;
 import th.taxbook.validation.DataValidator;
 import th.taxbook.validation.DataValidator.DeductionInput;
 import th.taxbook.validation.DataValidator.EntryInput;
+import th.taxbook.validation.DataValidator.ExpenseInput;
 import th.taxbook.validation.DataValidator.Invalid;
 import th.taxbook.validation.DataValidator.ProfileInput;
 
@@ -47,10 +50,11 @@ public class TaxDataService {
     private final IncomeEntryRepository entries;
     private final WithholdPrefRepository prefs;
     private final DeductionEntryRepository deductions;
+    private final ExpenseEntryRepository expenses;
 
     public TaxDataService(UserRepository users, TaxProfileRepository profiles, TaxYearRepository years,
                           IncomeCategoryRepository categories, IncomeEntryRepository entries, WithholdPrefRepository prefs,
-                          DeductionEntryRepository deductions) {
+                          DeductionEntryRepository deductions, ExpenseEntryRepository expenses) {
         this.users = users;
         this.profiles = profiles;
         this.years = years;
@@ -58,6 +62,7 @@ public class TaxDataService {
         this.entries = entries;
         this.prefs = prefs;
         this.deductions = deductions;
+        this.expenses = expenses;
     }
 
     // ---------- ประเภทเงินได้ ----------
@@ -212,6 +217,52 @@ public class TaxDataService {
         deductions.delete(deductions.findOwned(id, uid).orElseThrow(() -> new NotFound("deduction")));
     }
 
+    // ---------- รายจ่าย ----------
+
+    static final int MAX_EXPENSES_PER_USER = 5000;
+
+    @Transactional(readOnly = true)
+    public List<Dtos.Expense> expenses(UUID uid) {
+        return expenses.findAllByUser(uid).stream().map(Dtos.Expense::of).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Dtos.Expense expense(UUID uid, long id) {
+        return Dtos.Expense.of(expenses.findOwned(id, uid).orElseThrow(() -> new NotFound("expense")));
+    }
+
+    @Transactional
+    public Dtos.Expense createExpense(UUID uid, ExpenseInput in) {
+        if (expenses.countByUser(uid) >= MAX_EXPENSES_PER_USER) throw new Conflict("too_many_expenses");
+        String cat = in.category() == null || in.category().isEmpty() ? null : in.category();
+        if ("personal".equals(in.kind())) cat = null;
+        TaxYear y = findOrCreateYear(uid, in.yearBe());
+        return Dtos.Expense.of(expenses.save(new ExpenseEntry(y, in.month(), in.kind(), cat, in.name(), in.amount(), in.note())));
+    }
+
+    /** แก้เฉพาะฟิลด์ที่ส่งมา; เปลี่ยนเป็น personal จะล้างประเภทเงินได้ให้เอง */
+    @Transactional
+    public Dtos.Expense updateExpense(UUID uid, long id, ExpenseInput in) {
+        ExpenseEntry e = expenses.findOwned(id, uid).orElseThrow(() -> new NotFound("expense"));
+        if (in.yearBe() != null && in.yearBe() != e.getTaxYear().getYearBe()) e.setTaxYear(findOrCreateYear(uid, in.yearBe()));
+        if (in.month() != null) e.setMonth(in.month());
+        if (in.kind() != null) e.setKind(in.kind());
+        if (in.category() != null) e.setCategoryCode(in.category().isEmpty() ? null : in.category());
+        if ("personal".equals(e.getKind())) {
+            if (in.category() != null && !in.category().isEmpty()) throw new Invalid("category_not_allowed");
+            e.setCategoryCode(null);
+        }
+        if (in.name() != null) e.setName(in.name());
+        if (in.amount() != null) e.setAmount(in.amount());
+        if (in.note() != null) e.setNote(in.note());
+        return Dtos.Expense.of(expenses.save(e));
+    }
+
+    @Transactional
+    public void deleteExpense(UUID uid, long id) {
+        expenses.delete(expenses.findOwned(id, uid).orElseThrow(() -> new NotFound("expense")));
+    }
+
     /** ลบรายการทั้งหมดของปี (หรือเฉพาะเดือน ถ้าส่ง month) โดยไม่ลบตัวปีภาษี คืนจำนวนที่ลบ */
     @Transactional
     public int clearEntries(UUID uid, int yearBe, Integer month) {
@@ -255,6 +306,7 @@ public class TaxDataService {
             Map<String, Object> ym = new LinkedHashMap<>();
             ym.put("months", new LinkedHashMap<String, Object>());
             ym.put("ded", new ArrayList<Object>());
+            ym.put("exp", new ArrayList<Object>());
             yearMap.put(String.valueOf(y.getYearBe()), ym);
         }
         for (Dtos.Entry e : search(uid, null, null, null, null)) {
@@ -285,6 +337,21 @@ public class TaxDataService {
             item.put("n", d.getName());
             item.put("i", d.getAmount());
             item.put("p", d.getWithheldPct());
+            list.add(item);
+        }
+        for (ExpenseEntry x : expenses.findAllByUser(uid)) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> ym = (Map<String, Object>) yearMap.get(String.valueOf(x.getTaxYear().getYearBe()));
+            @SuppressWarnings("unchecked")
+            List<Object> list = (List<Object>) ym.get("exp");
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", x.getId());
+            item.put("m", x.getMonth());
+            item.put("k", x.getKind());
+            item.put("c", x.getCategoryCode() == null ? "" : x.getCategoryCode());
+            item.put("n", x.getName());
+            item.put("i", x.getAmount());
+            item.put("o", x.getNote());
             list.add(item);
         }
         Map<String, Object> out = new LinkedHashMap<>();

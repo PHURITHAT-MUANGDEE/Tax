@@ -108,6 +108,23 @@ a.golink { color: var(--accent); text-decoration: underline; cursor: pointer; }
 .ent.ded { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 0.8fr); }
 .ent.ded.ins { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(0, 0.9fr); }
 .ent.ded + .ent.ded { margin-top: 10px; }
+.ent.exp { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.4fr) minmax(0, 1fr); }
+.ent.exp + .ent.exp { margin-top: 10px; }
+.ent.exp .field.wide { grid-column: 1 / -1; }
+.btn.att { grid-column: 1 / -1; justify-self: start; padding: 5px 12px; font-size: 0.82rem; }
+a.btn { text-decoration: none; display: inline-block; }
+.btn.att[disabled] { opacity: .55; cursor: not-allowed; }
+.attdlg { border: 1px solid var(--line); border-radius: 8px; padding: 0; width: min(560px, calc(100vw - 32px)); background: var(--paper); color: var(--ink); }
+.attdlg::backdrop { background: rgba(0,0,0,.4); }
+.attdlg .ab { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.attdlg h2 { margin: 0; font-size: 1.1rem; }
+.attlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.attlist li { display: flex; gap: 10px; align-items: center; justify-content: space-between; background: var(--bg); border-radius: 6px; padding: 8px 10px; font-size: 0.9rem; }
+.attlist .fn { min-width: 0; overflow-wrap: anywhere; }
+.attlist .fn small { display: block; color: var(--muted); }
+.attlist .acts2 { display: flex; gap: 6px; flex: none; }
+.expsum { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.exphint { font-size: 0.88rem; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
 .ent.pent .field.wide { grid-column: 1 / -1; }
 .stack.narrow { max-width: 720px; }
 .rowstat { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--muted); }
@@ -296,7 +313,7 @@ footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; display: flex;
   .cards, .cols, .flow { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 760px) {
-  .ent, .ent.ded { grid-template-columns: minmax(0, 1fr); }
+  .ent, .ent.ded, .ent.exp { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   .fields { grid-template-columns: minmax(0, 1fr); }
@@ -377,6 +394,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       <div class="navlist">
         <a class="navitem" href="#summary" data-nav="summary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="long">รายได้ที่หักภาษีแล้ว</span><span class="short">สรุป</span></a>
         <a class="navitem" href="#monthly" data-nav="monthly"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span class="long">บันทึกรายได้รายเดือน</span><span class="short">รายเดือน</span></a>
+        <a class="navitem" href="#expense" data-nav="expense"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4z"/><path d="M4 11h16M8 15h3"/></svg><span class="long">บันทึกรายจ่าย</span><span class="short">รายจ่าย</span></a>
         <a class="navitem" href="#report" data-nav="report"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg><span class="long">ตารางบันทึกรายได้</span><span class="short">ตาราง</span></a>
         <a class="navitem" href="#search" data-nav="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><span class="long">ค้นหารายการรายได้</span><span class="short">ค้นหา</span></a>
         <a class="navitem" href="#profile" data-nav="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><span class="long">ค่าลดหย่อน</span><span class="short">ลดหย่อน</span></a>
@@ -475,6 +493,33 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
         <div class="tablewrap"><table class="mtable" id="matrix"></table></div>
       </div>
     </section>
+
+    <!-- รายจ่าย -->
+    <section class="page" id="page-expense" data-page="expense" hidden>
+      <div class="phead">
+        <div class="eyebrow" id="expEyebrow">ปีภาษี</div>
+        <h1>บันทึกรายจ่าย</h1>
+        <p>แยกรายจ่ายส่วนตัวออกจากค่าใช้จ่ายในการหารายได้ (เช่น ค่าเดินทางไปพบลูกค้า ค่าอุปกรณ์ทำงาน) แนบสลิปหรือใบเสร็จเป็นหลักฐานได้ รายจ่ายไม่ถูกนำไปหักในการคำนวณภาษีของแอปนี้ ใช้เทียบกับค่าใช้จ่ายเหมาเพื่อดูว่าหักตามจริงคุ้มกว่าหรือไม่</p>
+      </div>
+      <div class="sheet">
+        <div class="mhead"><h2>รายการรายจ่ายของปีนี้</h2><div class="acts"><button type="button" class="btn" id="expAdd">+ เพิ่มรายจ่าย</button></div></div>
+        <div class="mrows" id="expRows"></div>
+        <div class="mtot"><span>ส่วนตัว <b class="num" id="expPers">฿0</b></span><span>ค่าใช้จ่ายในการหารายได้ <b class="num" id="expCost">฿0</b></span></div>
+        <div class="exphint" id="expHint"></div>
+      </div>
+    </section>
+
+    <dialog class="attdlg" id="attDlg" aria-labelledby="attTitle">
+      <div class="ab">
+        <h2 id="attTitle">ไฟล์หลักฐาน</h2>
+        <ul class="attlist" id="attList"></ul>
+        <div class="field"><label for="attType">ชนิดเอกสาร</label>
+          <select id="attType"><option value="slip">สลิปโอนเงิน</option><option value="receipt">ใบเสร็จ / ใบกำกับภาษี</option><option value="withholding_cert">หนังสือรับรองการหักภาษี (50 ทวิ)</option><option value="insurance_cert">หนังสือรับรองเบี้ยประกัน</option><option value="other">อื่น ๆ</option></select></div>
+        <div class="field"><label for="attFile">เลือกไฟล์ (PDF, JPG, PNG ไม่เกิน 5 MB)</label><input type="file" id="attFile" accept="application/pdf,image/jpeg,image/png"></div>
+        <div class="hint" id="attMsg" role="status"></div>
+        <div class="acts"><button type="button" class="btn" id="attUp">อัปโหลด</button> <button type="button" class="btn" id="attClose">ปิด</button></div>
+      </div>
+    </dialog>
 
     <!-- ตารางบันทึกรายได้ -->
     <section class="page" id="page-report" data-page="report" hidden>
@@ -891,8 +936,8 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   }
   function blank() { var s = { v: 2, sample: false, project: true, profile: defProfile(), years: {}, months: {}, wm: {}, year: NOW_YEAR }; bindYear(s, NOW_YEAR); return s; }
   // state.months ชี้ไปที่เดือนของปีที่กำลังดู เพื่อให้โค้ดเดิมทั้งหมดใช้ได้โดยไม่ต้องรู้เรื่องปี
-  function newYear() { return { months: {}, ded: [] }; }
-  function bindYear(s, y) { s.year = y; if (!s.years[y]) s.years[y] = newYear(); if (!Array.isArray(s.years[y].ded)) s.years[y].ded = []; s.months = s.years[y].months; }
+  function newYear() { return { months: {}, ded: [], exp: [] }; }
+  function bindYear(s, y) { s.year = y; if (!s.years[y]) s.years[y] = newYear(); if (!Array.isArray(s.years[y].ded)) s.years[y].ded = []; if (!Array.isArray(s.years[y].exp)) s.years[y].exp = []; s.months = s.years[y].months; }
   function validYear(y) { y = parseInt(y, 10); return y >= 2500 && y <= 2700 ? y : 0; }
   function sampleState() {
     var s = blank(); s.sample = true; s.profile.parents = 2; s.years[NOW_YEAR].ded.push({ k: "ss33", n: "ประกันสังคม", i: 9000, p: 0 });
@@ -929,6 +974,14 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       if (e.id) r.id = e.id; return r;
     });
   }
+  function normExp(v) {
+    if (!Array.isArray(v)) return [];
+    return v.filter(function (e) { return e && typeof e === "object"; }).map(function (e) {
+      var m = parseInt(e.m, 10), k = e.k === "income_cost" ? "income_cost" : "personal", c = /^c[1-8]$/.test(e.c) && k === "income_cost" ? e.c : "";
+      var r = { m: m >= 1 && m <= 12 ? m : 1, k: k, c: c, n: String(e.n || ""), i: num(e.i), o: String(e.o || "") };
+      if (e.id) r.id = e.id; return r;
+    });
+  }
   function normalize(o) {
     var s = blank();
     if (!o || typeof o !== "object") return s;
@@ -951,6 +1004,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
         if (!s.years[y]) s.years[y] = newYear();
         readMonths(o.years[yk].months, s.years[y].months);
         s.years[y].ded = normDed(o.years[yk].ded);
+        s.years[y].exp = normExp(o.years[yk].exp);
       });
     } else if (o.months) { // ข้อมูลรุ่นเก่า ยังไม่แยกปี
       s.years[LEGACY_YEAR] = newYear();
@@ -971,13 +1025,16 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       var mo = c.years[y].months || {};
       Object.keys(mo).forEach(function (m) { pruneOne(mo, m); });
       c.years[y].ded = (c.years[y].ded || []).filter(keepDed);
-      if (!Object.keys(mo).length && !c.years[y].ded.length) delete c.years[y];
+      c.years[y].exp = (c.years[y].exp || []).filter(keepExp);
+      if (!Object.keys(mo).length && !c.years[y].ded.length && !c.years[y].exp.length) delete c.years[y];
     });
     return c;
   }
   function hasName(e) { return !!(e.n && String(e.n).trim()); }
   function keepEnt(e) { return (e.i || 0) > 0 || (e.w || 0) > 0 || !!(e.n && String(e.n).trim()); }
   function hasDedName(e) { return !!(e.n && String(e.n).trim()); }
+  function hasExpName(e) { return !!(e.n && String(e.n).trim()); }
+  function keepExp(e) { return (e.i || 0) > 0 || hasExpName(e); }
   function keepDed(e) { return (e.i || 0) > 0 || (e.p || 0) > 0 || hasDedName(e); }
   function pruneOne(months, m) {
     var mo = months[m]; if (!mo) return;
@@ -1004,6 +1061,14 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       return { ok: res.ok, status: res.status, data: data };
     } catch (e) { return { ok: false, status: 0, data: null }; }
   }
+  async function apiForm(path, fd) {   // อัปโหลดไฟล์ (multipart) ห้ามตั้ง Content-Type เอง เบราว์เซอร์ใส่ boundary ให้
+    try {
+      var res = await fetch(path, { method: "POST", credentials: "same-origin", headers: { "Accept": "application/json", "X-XSRF-TOKEN": xsrf() }, body: fd }), data = null;
+      try { data = await res.json(); } catch (e) { data = null; }
+      if (res.status === 401 && loaded) sessionExpired();
+      return { ok: res.ok, status: res.status, data: data };
+    } catch (e) { return { ok: false, status: 0, data: null }; }
+  }
   function sessionExpired() {
     authUser = null; loaded = false; settings = null; clearTimeout(saveTimer);
     showGate("เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง การแก้ไขที่ยังไม่ได้บันทึกอาจหายไป");
@@ -1023,7 +1088,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   /* ซิงก์กับเซิร์ฟเวอร์แบบเทียบส่วนต่าง: แก้เฉพาะสิ่งที่เปลี่ยน
      โปรไฟล์ → PUT /api/profile, วิธีหักภาษี → PUT/DELETE /api/withhold-prefs/{ประเภท},
      รายการรายได้ → POST/PUT/DELETE /api/entries (รายการใหม่ไม่มี id จนกว่าเซิร์ฟเวอร์สร้างให้) */
-  var srv = { profile: "", wm: {}, ent: {}, ded: {} };
+  var srv = { profile: "", wm: {}, ent: {}, ded: {}, exp: {} };
   function profBody() {
     var p = state.profile, b = { project: !!state.project, sample: !!state.sample };
     Object.keys(p).forEach(function (k) { b[k] = (typeof p[k] === "boolean" || typeof p[k] === "string") ? p[k] : num(p[k]); });
@@ -1031,8 +1096,10 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
   }
   function entBody(y, m, c, e) { return { yearBe: parseInt(y, 10), month: parseInt(m, 10), category: c, amount: num(e.i), withheld: num(e.w), method: String(e.t || ""), name: String(e.n || "").trim() }; }
   function dedBody(y, e) { return { yearBe: parseInt(y, 10), kind: String(e.k), name: String(e.n || "").trim(), amount: num(e.i), pct: dedGroup(e.k) === "oth" ? clamp(num(e.p), 0, 100) : 0 }; }
+  function expBody(y, e) { return { yearBe: parseInt(y, 10), month: parseInt(e.m, 10) || 1, kind: e.k === "income_cost" ? "income_cost" : "personal", category: e.k === "income_cost" ? String(e.c || "") : "", name: String(e.n || "").trim(), amount: num(e.i), note: String(e.o || "").trim() }; }
   function snapshotServer() {
-    srv.profile = JSON.stringify(profBody()); srv.wm = JSON.parse(JSON.stringify(state.wm || {})); srv.ent = {}; srv.ded = {};
+    srv.profile = JSON.stringify(profBody()); srv.wm = JSON.parse(JSON.stringify(state.wm || {})); srv.ent = {}; srv.ded = {}; srv.exp = {};
+    Object.keys(state.years).forEach(function (y) { (state.years[y].exp || []).forEach(function (e) { if (e.id) srv.exp[e.id] = JSON.stringify(expBody(y, e)); }); });
     Object.keys(state.years).forEach(function (y) { (state.years[y].ded || []).forEach(function (e) { if (e.id) srv.ded[e.id] = JSON.stringify(dedBody(y, e)); }); });
     Object.keys(state.years).forEach(function (y) { var mo = state.years[y].months || {};
       Object.keys(mo).forEach(function (m) { Object.keys(mo[m]).forEach(function (c) { mo[m][c].forEach(function (e) { if (e.id) srv.ent[e.id] = JSON.stringify(entBody(y, m, c, e)); }); }); }); });
@@ -1081,7 +1148,25 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
         }
       }
     }
+    var wantX = {};
+    for (var yx = 0; yx < ys.length; yx++) {
+      var xl = state.years[ys[yx]].exp || [];
+      for (var xi = 0; xi < xl.length; xi++) {
+        var x = xl[xi];
+        if (!keepExp(x)) continue;
+        if (!hasExpName(x)) { blocked++; if (x.id) wantX[x.id] = 1; continue; }
+        body = expBody(ys[yx], x);
+        if (!x.id) {
+          r = await api("POST", "/api/expenses", body); if (!r.ok) return r;
+          x.id = r.data.id; srv.exp[x.id] = JSON.stringify(body); wantX[x.id] = 1;
+        } else {
+          wantX[x.id] = 1;
+          if (srv.exp[x.id] !== JSON.stringify(body)) { r = await api("PUT", "/api/expenses/" + x.id, body); if (!r.ok) return r; srv.exp[x.id] = JSON.stringify(body); }
+        }
+      }
+    }
     for (var id in srv.ent) if (!want[id]) { r = await api("DELETE", "/api/entries/" + id); if (!r.ok && r.status !== 404) return r; delete srv.ent[id]; }
+    for (var xid in srv.exp) if (!wantX[xid]) { r = await api("DELETE", "/api/expenses/" + xid); if (!r.ok && r.status !== 404) return r; delete srv.exp[xid]; }
     for (var did in srv.ded) if (!wantD[did]) { r = await api("DELETE", "/api/deductions/" + did); if (!r.ok && r.status !== 404) return r; delete srv.ded[did]; }
     return { ok: true, blocked: blocked };
   }
@@ -1112,7 +1197,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       if (res[0].status === 401) { showGate(""); return; }
       if (!res[0].ok) { showGate("โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง"); return; }
       authUser = { email: me.email || "" };
-      state = normalize(res[0].data); snapshotServer();
+      state = normalize(res[0].data); snapshotServer(); await loadAttCounts();
       settings = res[1].ok ? res[1].data : null;
       loaded = true; unsaved = false;
       $("gate").hidden = true; $("boot").hidden = true; $("app").hidden = false;
@@ -1631,6 +1716,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       "<div class='field'><label for='in-" + id + "'>รายได้ (บาท)</label><input type='text' inputmode='decimal' id='in-" + id + "' data-f='i' data-cat='" + k + "' data-ei='" + j + "' value='" + (e.i || "") + "' placeholder='0'></div>" +
       "<div class='field wfield' id='wcol-" + id + "'>" + wHtml(k, j, e) + "</div>" +
       "<div class='rowstat' id='rs-" + id + "' data-cat='" + k + "' data-ei='" + j + "' data-s='none' role='status'></div>" +
+      "<button type='button' class='btn att' data-att='income' data-cat='" + k + "' data-ei='" + j + "'>แนบหลักฐาน</button>" +
       "<button type='button' class='x' id='rm-" + id + "' data-rm='1' data-cat='" + k + "' data-ei='" + j + "' aria-label='ลบรายการนี้'>×</button></div>";
   }
   var ROWTXT = { saved: "บันทึกแล้ว", saving: "กำลังบันทึก…", error: "บันทึกไม่สำเร็จ กำลังลองใหม่", needname: "ยังไม่ได้บันทึก (ต้องกรอกชื่อรายการ)" };
@@ -1649,6 +1735,11 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       var st = dedState(da[+el.getAttribute("data-di")]);
       el.setAttribute("data-s", st); el.textContent = ROWTXT[st] || "";
     });
+    Array.prototype.forEach.call(document.querySelectorAll("#expRows .rowstat"), function (el) {
+      var st = expState(expList()[+el.getAttribute("data-xi")]);
+      el.setAttribute("data-s", st); el.textContent = ROWTXT[st] || "";
+    });
+    refreshAttBtns();
     var mo = state.months[selMonth] || {};
     Array.prototype.forEach.call(document.querySelectorAll("#mrows .rowstat"), function (el) {
       var c = el.getAttribute("data-cat"), st = rowState(c, (mo[c] || [])[+el.getAttribute("data-ei")]);
@@ -1677,6 +1768,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
       "<div class='field'><label for='di-" + j + "'>" + (g === "ins" ? "ยอดที่ซื้อ/จ่าย (บาท)" : "รายได้ (บาท)") + "</label><input type='text' inputmode='decimal' id='di-" + j + "' data-df='i' data-di='" + j + "' value='" + (e.i || "") + "' placeholder='0'></div>" +
       (g === "oth" ? "<div class='field'><label for='dp-" + j + "'>ภาษีที่ถูกหัก (%)</label><input type='text' inputmode='decimal' id='dp-" + j + "' data-df='p' data-di='" + j + "' value='" + (e.p || "") + "' placeholder='0'></div>" : "") +
       "<div class='rowstat' id='drs-" + j + "' data-di='" + j + "' data-s='none' role='status'></div>" +
+      "<button type='button' class='btn att' data-att='deduction' data-di='" + j + "'>แนบหลักฐาน</button>" +
       "<button type='button' class='x' id='drm-" + j + "' data-drm='1' data-di='" + j + "' aria-label='ลบรายการนี้'>×</button></div>";
   }
   function renderDed() {
@@ -1829,7 +1921,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     bindYear(state, y);
     var m = selMonth; renderAll(); if (keepMonth) { selMonth = m; renderChips(); renderMonth(); updateDerived(); }
   }
-  function renderAll() { selMonth = defaultMonth(); fillYearSel(); yearLabels(); initProfile(); renderDed(); renderChips(); renderMonth(); updateDerived(); }
+  function renderAll() { selMonth = defaultMonth(); fillYearSel(); yearLabels(); initProfile(); renderDed(); renderExp(); renderChips(); renderMonth(); updateDerived(); }
 
   /* ---------- เพิ่ม/ลบปีภาษี → POST /api/years, DELETE /api/years/{ปี} ---------- */
   var yearDelTimer = null;
@@ -1861,6 +1953,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     delete state.years[y];
     Object.keys(srv.ent).forEach(function (id) { try { if (JSON.parse(srv.ent[id]).yearBe === y) delete srv.ent[id]; } catch (e2) {} });
     Object.keys(srv.ded).forEach(function (id) { try { if (JSON.parse(srv.ded[id]).yearBe === y) delete srv.ded[id]; } catch (e3) {} });
+    Object.keys(srv.exp).forEach(function (id) { try { if (JSON.parse(srv.exp[id]).yearBe === y) delete srv.exp[id]; } catch (e4) {} });
     if (logYear === String(y)) logYear = "all";
     var rest = Object.keys(state.years).map(Number).sort(function (a, c) { return c - a; });
     setYear(y !== NOW_YEAR ? NOW_YEAR : (rest[0] || NOW_YEAR));
@@ -2058,8 +2151,144 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     setYear(+p[0]); selMonth = +p[1]; renderChips(); renderMonth(); updateDerived();
   });
 
+  /* ---------- รายจ่าย: แต่ละบรรทัด = 1 แถวใน expense_entry ---------- */
+  function expList() { var Y = state.years[state.year]; return Y && Array.isArray(Y.exp) ? Y.exp : []; }
+  function expState(e) {
+    if (!e || !keepExp(e)) return "none";
+    if (!hasExpName(e)) return "needname";
+    if (e.id && srv.exp[e.id] === JSON.stringify(expBody(state.year, e))) return "saved";
+    return statusKind === "error" ? "error" : "saving";
+  }
+  function expHtml(j, e) {
+    var mo = MONTHS.map(function (n, i) { return "<option value='" + (i + 1) + "'" + (e.m === i + 1 ? " selected" : "") + ">" + n + "</option>"; }).join("");
+    var cats = "<option value=''" + (!e.c ? " selected" : "") + ">ไม่ระบุประเภท</option>" + CATS.map(function (c) { return "<option value='" + c.k + "'" + (e.c === c.k ? " selected" : "") + ">" + c.code + " " + c.name + "</option>"; }).join("");
+    return "<div class='ent exp'>" +
+      "<div class='field'><label for='xm-" + j + "'>เดือน</label><select id='xm-" + j + "' data-xf='m' data-xi='" + j + "'>" + mo + "</select></div>" +
+      "<div class='field'><label for='xk-" + j + "'>ประเภทรายจ่าย</label><select id='xk-" + j + "' data-xf='k' data-xi='" + j + "'><option value='personal'" + (e.k === "personal" ? " selected" : "") + ">ส่วนตัว</option><option value='income_cost'" + (e.k === "income_cost" ? " selected" : "") + ">ค่าใช้จ่ายในการหารายได้</option></select></div>" +
+      "<div class='field'><label for='xc-" + j + "'>เกี่ยวกับเงินได้ประเภท</label><select id='xc-" + j + "' data-xf='c' data-xi='" + j + "'" + (e.k === "income_cost" ? "" : " disabled") + ">" + cats + "</select></div>" +
+      "<div class='field'><label for='xn-" + j + "'>ชื่อรายการ (จำเป็น)</label><input type='text' id='xn-" + j + "' data-xf='n' data-xi='" + j + "' value='" + esc(e.n || "") + "' placeholder='เช่น ค่าเดินทางพบลูกค้า' maxlength='200' aria-required='true'><span class='hint need'>ต้องกรอกชื่อรายการ จึงจะบันทึกได้</span></div>" +
+      "<div class='field'><label for='xi-" + j + "'>จำนวนเงิน (บาท)</label><input type='text' inputmode='decimal' id='xi-" + j + "' data-xf='i' data-xi='" + j + "' value='" + (e.i || "") + "' placeholder='0'></div>" +
+      "<div class='field wide'><label for='xo-" + j + "'>หมายเหตุ (ไม่บังคับ)</label><input type='text' id='xo-" + j + "' data-xf='o' data-xi='" + j + "' value='" + esc(e.o || "") + "' maxlength='500'></div>" +
+      "<div class='rowstat' id='xrs-" + j + "' data-xi='" + j + "' data-s='none' role='status'></div>" +
+      "<button type='button' class='btn att' data-att='expense' data-xi='" + j + "'>แนบหลักฐาน</button>" +
+      "<button type='button' class='x' data-xrm='1' data-xi='" + j + "' aria-label='ลบรายการนี้'>×</button></div>";
+  }
+  function renderExp() {
+    if (!loaded) return;
+    $("expEyebrow").textContent = "ปีภาษี " + state.year;
+    var a = expList();
+    $("expRows").innerHTML = a.length ? a.map(function (e, j) { return expHtml(j, e); }).join("") : "<div class='hint'>ยังไม่มีรายจ่ายในปีนี้ กด \"+ เพิ่มรายจ่าย\"</div>";
+    refreshRowStats(); markExpNames(); updateExpSum();
+  }
+  function markExpNames() {
+    var a = expList();
+    Array.prototype.forEach.call(document.querySelectorAll("#expRows input[data-xf='n']"), function (el) {
+      var e = a[+el.getAttribute("data-xi")];
+      if (e && keepExp(e) && !hasExpName(e)) el.setAttribute("aria-invalid", "true"); else el.removeAttribute("aria-invalid");
+    });
+  }
+  function updateExpSum() {
+    var a = expList(), p = 0, c = 0, byCat = {};
+    a.forEach(function (e) { if (e.k === "income_cost") { c += e.i || 0; if (e.c) byCat[e.c] = (byCat[e.c] || 0) + (e.i || 0); } else p += e.i || 0; });
+    $("expPers").textContent = B(p); $("expCost").textContent = B(c);
+    var C = compute(), lines = [];
+    CATS.forEach(function (cat) {
+      if (!byCat[cat.k]) return;
+      var flat = C.ex[cat.k] || 0;
+      lines.push(cat.code + ": ค่าใช้จ่ายจริงที่บันทึก " + B(byCat[cat.k]) + " · ที่แอปหักเหมาให้ " + B(flat) + (byCat[cat.k] > flat ? " (ค่าใช้จ่ายจริงมากกว่า อาจเลือกหักตามจริงได้ถ้ามีหลักฐานครบ)" : " (หักเหมาให้มากกว่าอยู่แล้ว)"));
+    });
+    $("expHint").innerHTML = lines.length ? lines.map(function (l) { return "<span>" + esc(l) + "</span>"; }).join("") : "";
+  }
+  $("expAdd").addEventListener("click", function () {
+    var a = expList(); a.push({ m: selMonth || 1, k: "personal", c: "", n: "", i: 0, o: "" });
+    renderExp(); scheduleSave();
+    var el = $("xn-" + (a.length - 1)); if (el) el.focus();
+  });
+  $("expRows").addEventListener("input", function (e) {
+    var t = e.target, f = t.getAttribute("data-xf"); if (!f || f === "m" || f === "k" || f === "c") return;
+    var en = expList()[+t.getAttribute("data-xi")]; if (!en) return;
+    if (f === "n") en.n = t.value.slice(0, 200); else if (f === "i") en.i = num(t.value); else en.o = t.value.slice(0, 500);
+    scheduleSave(); markExpNames(); updateExpSum(); refreshRowStats();
+  });
+  $("expRows").addEventListener("change", function (e) {
+    var t = e.target, f = t.getAttribute("data-xf"); if (f !== "m" && f !== "k" && f !== "c") return;
+    var j = +t.getAttribute("data-xi"), en = expList()[j]; if (!en) return;
+    if (f === "m") en.m = parseInt(t.value, 10) || 1;
+    else if (f === "c") en.c = t.value;
+    else { en.k = t.value; if (en.k !== "income_cost") en.c = ""; $("xc-" + j).disabled = en.k !== "income_cost"; $("xc-" + j).value = en.c; }
+    scheduleSave(); updateExpSum(); refreshRowStats();
+  });
+  $("expRows").addEventListener("click", function (e) {
+    var rm = e.target.closest("[data-xrm]"); if (!rm) return;
+    var a = expList(), en = a[+rm.getAttribute("data-xi")];
+    if (en && en.id) delete attCounts["expense:" + en.id];
+    a.splice(+rm.getAttribute("data-xi"), 1);
+    renderExp(); scheduleSave();
+  });
+
+  /* ---------- ไฟล์หลักฐาน (document_attachment) ---------- */
+  var attCounts = {}, attCur = null;
+  var DOCTXT = { slip: "สลิปโอนเงิน", receipt: "ใบเสร็จ / ใบกำกับภาษี", withholding_cert: "หนังสือรับรองการหักภาษี (50 ทวิ)", insurance_cert: "หนังสือรับรองเบี้ยประกัน", other: "อื่น ๆ" };
+  async function loadAttCounts() {
+    attCounts = {};
+    var r = await api("GET", "/api/attachments/counts");
+    if (r.ok && Array.isArray(r.data)) r.data.forEach(function (c) { attCounts[c.parent + ":" + c.id] = c.n; });
+  }
+  function attTarget(btn) {   // หารายการที่ปุ่มนี้อยู่ แล้วคืน {parent, id, label}
+    var kind = btn.getAttribute("data-att"), en, label;
+    if (kind === "income") { var mo = state.months[selMonth] || {}; en = (mo[btn.getAttribute("data-cat")] || [])[+btn.getAttribute("data-ei")]; label = en && en.n; }
+    else if (kind === "deduction") { en = dedList()[+btn.getAttribute("data-di")]; label = en && en.n; }
+    else { en = expList()[+btn.getAttribute("data-xi")]; label = en && en.n; }
+    return { parent: kind, id: en && en.id, label: label || "" };
+  }
+  function refreshAttBtns() {
+    Array.prototype.forEach.call(document.querySelectorAll(".btn.att"), function (b) {
+      var t = attTarget(b), n = t.id ? (attCounts[t.parent + ":" + t.id] || 0) : 0;
+      b.disabled = !t.id;
+      b.title = t.id ? "" : "กรอกชื่อรายการและรอให้บันทึกก่อน จึงจะแนบไฟล์ได้";
+      b.textContent = n ? "แนบหลักฐาน · " + n + " ไฟล์" : "แนบหลักฐาน";
+    });
+  }
+  function fmtSize(b) { return b >= 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB"; }
+  async function renderAttList() {
+    var r = await api("GET", "/api/attachments?parent=" + attCur.parent + "&id=" + attCur.id), ul = $("attList");
+    if (!r.ok) { ul.innerHTML = ""; $("attMsg").textContent = "โหลดรายการไฟล์ไม่สำเร็จ"; return; }
+    attCounts[attCur.parent + ":" + attCur.id] = r.data.length;
+    ul.innerHTML = r.data.length ? r.data.map(function (a) {
+      return "<li><span class='fn'>" + esc(a.fileName) + "<small>" + esc(DOCTXT[a.docType] || a.docType) + " · " + fmtSize(a.sizeBytes) + "</small></span>" +
+        "<span class='acts2'><a class='btn' href='/api/attachments/" + a.id + "/file' download>ดาวน์โหลด</a><button type='button' class='btn danger' data-attdel='" + a.id + "'>ลบ</button></span></li>";
+    }).join("") : "<li>ยังไม่มีไฟล์แนบ</li>";
+    refreshAttBtns();
+  }
+  var ATTERR = { unsupported_file_type: "รองรับเฉพาะ PDF, JPG, PNG", file_too_large: "ไฟล์ใหญ่เกิน 5 MB", file_required: "กรุณาเลือกไฟล์", too_many_files_for_entry: "แนบได้ไม่เกิน 10 ไฟล์ต่อรายการ", too_many_files: "จำนวนไฟล์ของบัญชีเต็มแล้ว (200 ไฟล์)" };
+  document.addEventListener("click", async function (e) {
+    var b = e.target.closest && e.target.closest(".btn.att");
+    if (b) {
+      var t = attTarget(b); if (!t.id) return;
+      attCur = t; $("attTitle").textContent = "ไฟล์หลักฐาน: " + (t.label || "รายการ"); $("attMsg").textContent = ""; $("attFile").value = "";
+      $("attType").value = t.parent === "deduction" ? "insurance_cert" : (t.parent === "income" ? "withholding_cert" : "receipt");
+      $("attDlg").showModal(); renderAttList(); return;
+    }
+    var d = e.target.closest && e.target.closest("[data-attdel]");
+    if (d && attCur) {
+      var r = await api("DELETE", "/api/attachments/" + d.getAttribute("data-attdel"));
+      $("attMsg").textContent = r.ok || r.status === 404 ? "ลบไฟล์แล้ว" : "ลบไม่สำเร็จ ลองใหม่อีกครั้ง"; renderAttList();
+    }
+  });
+  $("attClose").addEventListener("click", function () { $("attDlg").close(); });
+  $("attUp").addEventListener("click", async function () {
+    var f = $("attFile").files[0]; if (!f) { $("attMsg").textContent = "กรุณาเลือกไฟล์"; return; }
+    if (f.size > 5 * 1048576) { $("attMsg").textContent = ATTERR.file_too_large; return; }
+    var fd = new FormData(); fd.append("parent", attCur.parent); fd.append("parentId", String(attCur.id)); fd.append("docType", $("attType").value); fd.append("file", f);
+    $("attUp").disabled = true; $("attMsg").textContent = "กำลังอัปโหลด…";
+    var r = await apiForm("/api/attachments", fd);
+    $("attUp").disabled = false;
+    if (r.ok) { $("attMsg").textContent = "อัปโหลดแล้ว"; $("attFile").value = ""; renderAttList(); }
+    else $("attMsg").textContent = (r.data && ATTERR[r.data.error]) || (r.status === 413 ? ATTERR.file_too_large : "อัปโหลดไม่สำเร็จ ลองใหม่อีกครั้ง");
+  });
+
   /* ---------- routing ---------- */
-  var PAGES = ["summary", "monthly", "report", "search", "profile", "notify", "rules", "guide", "settings"];
+  var PAGES = ["summary", "monthly", "expense", "report", "search", "profile", "notify", "rules", "guide", "settings"];
   function show() {
     var h = (location.hash || "").replace("#", "");
     if (PAGES.indexOf(h) < 0) h = "summary";
@@ -2069,6 +2298,7 @@ fieldset.sub { padding-left: 28px; margin-top: -2px; }
     });
     if (h === "search" && loaded) prepSearch();
     if (h === "report" && loaded) renderReport();
+    if (h === "expense" && loaded) renderExp();
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", show);

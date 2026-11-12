@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import th.taxbook.data.entity.IncomeCategory;
 import th.taxbook.data.entity.DeductionEntry;
 import th.taxbook.data.entity.IncomeEntry;
+import th.taxbook.data.entity.ExpenseEntry;
 import th.taxbook.data.entity.TaxProfile;
 
 /** รูปแบบข้อมูลที่ส่งออกทาง API (ไม่ส่งตัว entity ออกไปโดยตรง) */
@@ -44,6 +45,13 @@ public final class Dtos {
     public record Deduction(Long id, int yearBe, String kind, String name, BigDecimal amount, BigDecimal withheldPct) {
         static Deduction of(DeductionEntry d) {
             return new Deduction(d.getId(), d.getTaxYear().getYearBe(), d.getKind(), d.getName(), d.getAmount(), d.getWithheldPct());
+        }
+    }
+
+    public record Expense(Long id, int yearBe, int month, String kind, String category, String name, BigDecimal amount, String note) {
+        static Expense of(ExpenseEntry e) {
+            return new Expense(e.getId(), e.getTaxYear().getYearBe(), e.getMonth(), e.getKind(),
+                e.getCategoryCode() == null ? "" : e.getCategoryCode(), e.getName(), e.getAmount(), e.getNote());
         }
     }
 

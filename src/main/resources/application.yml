@@ -11,6 +11,10 @@ server:
         secure: ${COOKIE_SECURE:true}        # รันทดสอบบน http://localhost ให้ตั้ง COOKIE_SECURE=false
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB                   # ไฟล์หลักฐานแนบรายการ (ตรงกับ check constraint ใน V7)
+      max-request-size: 6MB
   datasource:
     # Cloud SQL: jdbc:postgresql:///taxbook?cloudSqlInstance=PROJECT:REGION:INSTANCE&socketFactory=com.google.cloud.sql.postgres.SocketFactory
     url: ${DB_URL:jdbc:postgresql://localhost:5432/taxbook}
