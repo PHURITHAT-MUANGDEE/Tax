@@ -1,5 +1,5 @@
 PROLECT NAME: Revenue management system and understanding of taxes
-DESSCRIPTION: This system stems from a lack of understanding of taxation among Thais and the complexity of Thailand's personal income tax system, particularly the classification of assessable income under Section 40 of the Revenue Code, as well as the diverse and constantly changing conditions and limitations on deductions and tax benefits.
+DESCRIPTION: This system stems from a lack of understanding of taxation among Thais and the complexity of Thailand's personal income tax system, particularly the classification of assessable income under Section 40 of the Revenue Code, as well as the diverse and constantly changing conditions and limitations on deductions and tax benefits.
 GROUP MEMBER:
 6831503050 Thanakrit Phochot 
 6831503056 Pradisaru Jaroenthua
