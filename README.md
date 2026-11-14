@@ -1,4 +1,10 @@
 
+GROUP MEMBER:
+6831503050 Thanakrit Phochot 
+6831503056 Pradisaru Jaroenthua
+6831503058 Pannawat Kanha
+6831503062 Pitchayapa Boonsiri
+6831503065 Phurithat Muangdee
 
 ## โครงสร้าง
 
