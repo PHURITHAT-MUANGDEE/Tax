@@ -57,8 +57,8 @@ sdk install maven
 ## ขั้นที่ 2: ดึงโค้ดมา
  
 ```bash
-git clone [<ที่อยู่ GitHub ของโปรเจกต์> Tax](https://github.com/PHURITHAT-MUANGDEE/Tax)
-cd Tax
+git clone https://github.com/PHURITHAT-MUANGDEE/Tax (ชื่อ)
+cd ชื่อ
 ```
 
 (ถ้าอยู่ใน Codespace ของโปรเจกต์นี้แล้ว ใช้ `cd /workspaces/Tax` และ `git pull`)
@@ -139,6 +139,7 @@ export DB_PASSWORD=taxbook
 export GOOGLE_CLIENT_ID=ค่าของคุณ
 export GOOGLE_CLIENT_SECRET=ค่าของคุณ
 export COOKIE_SECURE=false        # รันบน http://localhost
+                                  # SECURE=true ถ้ารันบน codespace
 ```
 ถ้าอยากให้ส่งเมลด้วย
 ```bash
