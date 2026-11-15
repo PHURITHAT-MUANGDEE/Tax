@@ -1,0 +1,18 @@
+# ฐานข้อมูลสำหรับรันแอปด้วย mvn spring-boot:run (เปิดพอร์ต 5432 ให้เครื่องเดียวกัน)
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: taxbook
+      POSTGRES_USER: taxbook
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-taxbook}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taxbook -d taxbook"]
+      interval: 3s
+      retries: 20
+volumes:
+  pgdata_dev:
